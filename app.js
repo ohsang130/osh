@@ -3,9 +3,9 @@
  * Powered by Firebase Realtime Database for Zero-Config Instant Sync
  */
 
-// Embedded Dedicated Firebase Cloud Config
+// Embedded Dedicated Firebase Cloud Config (Open Realtime DB)
 const firebaseConfig = {
-  databaseURL: "https://couple-accountbook-default-rtdb.firebaseio.com"
+  databaseURL: "https://couple-household-budget-default-rtdb.asia-southeast1.firebasedatabase.app"
 };
 
 // Initialize Firebase
