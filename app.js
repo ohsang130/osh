@@ -26,7 +26,7 @@ const state = {
     '교통비', '운동', '의', '주', '연금', '대출이자',
     '소영', '의료비', '예비자금', '상연용돈', '소영용돈',
     '특수생활비', '보험', '통신비', '동생', '고정비',
-    '주택청약', '청년', '투자', '급여'
+    '주택청약', '청년', '투자'
   ],
   
   // Monthly Budgets
@@ -51,39 +51,41 @@ const GAS_CODE_TEMPLATE = `
 function doGet(e) {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
   var data = sheet.getDataRange().getValues();
-  if (data.length <= 1) {
-    return ContentService.createTextOutput(JSON.stringify([])).setMimeType(ContentService.MimeType.JSON);
-  }
-  var headers = data[0];
   var result = [];
-  for (var i = 1; i < data.length; i++) {
-    var row = data[i];
-    var obj = {};
-    for (var j = 0; j < headers.length; j++) {
-      obj[headers[j]] = row[j];
+  if (data.length > 1) {
+    var headers = data[0];
+    for (var i = 1; i < data.length; i++) {
+      var row = data[i];
+      var obj = {};
+      for (var j = 0; j < headers.length; j++) {
+        obj[headers[j]] = row[j];
+      }
+      result.push(obj);
     }
-    result.push(obj);
   }
-  return ContentService.createTextOutput(JSON.stringify(result)).setMimeType(ContentService.MimeType.JSON);
+  return ContentService.createTextOutput(JSON.stringify(result))
+    .setMimeType(ContentService.MimeType.JSON)
+    .setHeader("Access-Control-Allow-Origin", "*");
 }
 
 function doPost(e) {
   try {
     var contents = JSON.parse(e.postData.contents);
     var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-    
-    // Clear and Rewrite Header + Data
     sheet.clear();
     var headers = ["id", "type", "date", "amount", "payMethod", "category", "memo"];
     sheet.appendRow(headers);
-    
     for (var i = 0; i < contents.length; i++) {
       var item = contents[i];
       sheet.appendRow([item.id, item.type, item.date, item.amount, item.payMethod, item.category, item.memo]);
     }
-    return ContentService.createTextOutput(JSON.stringify({ status: "success" })).setMimeType(ContentService.MimeType.JSON);
+    return ContentService.createTextOutput(JSON.stringify({ status: "success" }))
+      .setMimeType(ContentService.MimeType.JSON)
+      .setHeader("Access-Control-Allow-Origin", "*");
   } catch(err) {
-    return ContentService.createTextOutput(JSON.stringify({ status: "error", message: err.toString() })).setMimeType(ContentService.MimeType.JSON);
+    return ContentService.createTextOutput(JSON.stringify({ status: "error", message: err.toString() }))
+      .setMimeType(ContentService.MimeType.JSON)
+      .setHeader("Access-Control-Allow-Origin", "*");
   }
 }
 `;
@@ -108,6 +110,11 @@ document.addEventListener('DOMContentLoaded', () => {
   setupEventListeners();
   renderApp();
   initCharts();
+
+  // If sync URL is saved, automatically fetch latest data on page load
+  if (state.appsScriptUrl) {
+    fetchFromGoogleSheets(true);
+  }
 });
 
 // Load stored data from localStorage
@@ -129,8 +136,16 @@ function loadStoredData() {
   const savedBudgets = localStorage.getItem('couple_budget_budgets');
   if (savedBudgets) state.budgets = JSON.parse(savedBudgets);
 
-  const savedUrl = localStorage.getItem('couple_budget_gas_url');
-  if (savedUrl) state.appsScriptUrl = savedUrl;
+  // Check URL query parameters for 'sync' (so partner can open shared link directly connected)
+  const urlParams = new URLSearchParams(window.location.search);
+  const syncUrlParam = urlParams.get('sync');
+  if (syncUrlParam) {
+    state.appsScriptUrl = decodeURIComponent(syncUrlParam);
+    localStorage.setItem('couple_budget_gas_url', state.appsScriptUrl);
+  } else {
+    const savedUrl = localStorage.getItem('couple_budget_gas_url');
+    if (savedUrl) state.appsScriptUrl = savedUrl;
+  }
 
   const currentTheme = localStorage.getItem('couple_budget_theme') || 'light';
   document.documentElement.setAttribute('data-theme', currentTheme);
@@ -139,9 +154,11 @@ function loadStoredData() {
   document.getElementById('txDate').value = '2026-08-07';
 }
 
-function saveTransactions() {
+function saveTransactions(shouldSyncToGoogle = true) {
   localStorage.setItem('couple_budget_transactions', JSON.stringify(state.transactions));
-  syncToGoogleSheetsIfNeeded();
+  if (shouldSyncToGoogle) {
+    syncToGoogleSheetsIfNeeded();
+  }
 }
 
 // Global Event Listeners
