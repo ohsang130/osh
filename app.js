@@ -174,6 +174,8 @@ function setupEventListeners() {
     document.getElementById('typeIncomeBtn').classList.add('active');
     document.getElementById('typeExpenseBtn').classList.remove('active');
     state.selectedCategory = state.incomeCategories[0] || '급여';
+    state.selectedPayMethod = '현금';
+    renderPayMethodChips();
     renderCategoryChips();
   });
 
