@@ -27,6 +27,8 @@ const state = {
   searchQuery: '',
   roomCode: 'myhouse-main-room', // Fixed shared room code so PC and mobile auto-connect!
 
+  incomeCategories: ['급여', '추가수입', '기타수입', '보너스', '금융수입', '이월'],
+
   payMethods: [
     '현대카드', '신한카드', '오동백', '동백', '국민카드',
     '네이버포인트', '신한포인트', '현금', '통장입금', '오국민(쿠팡)'
@@ -37,7 +39,7 @@ const state = {
     '교통비', '운동', '의', '주', '연금', '대출이자',
     '소영', '의료비', '예비자금', '상연용돈', '소영용돈',
     '특수생활비', '보험', '통신비', '동생', '고정비',
-    '주택청약', '청년', '투자', '급여'
+    '주택청약', '청년', '투자'
   ],
   
   budgets: {
@@ -163,12 +165,16 @@ function setupEventListeners() {
     state.type = 'expense';
     document.getElementById('typeExpenseBtn').classList.add('active');
     document.getElementById('typeIncomeBtn').classList.remove('active');
+    state.selectedCategory = state.categories[0] || '식비';
+    renderCategoryChips();
   });
 
   document.getElementById('typeIncomeBtn').addEventListener('click', () => {
     state.type = 'income';
     document.getElementById('typeIncomeBtn').classList.add('active');
     document.getElementById('typeExpenseBtn').classList.remove('active');
+    state.selectedCategory = state.incomeCategories[0] || '급여';
+    renderCategoryChips();
   });
 
   // Quick Amount Buttons
@@ -280,7 +286,10 @@ function renderPayMethodChips() {
 function renderCategoryChips() {
   const container = document.getElementById('categoryChips');
   container.innerHTML = '';
-  state.categories.forEach(cat => {
+  
+  const currentCategoryList = state.type === 'income' ? state.incomeCategories : state.categories;
+
+  currentCategoryList.forEach(cat => {
     const chip = document.createElement('div');
     chip.className = `chip-tag ${state.selectedCategory === cat ? 'selected' : ''}`;
     chip.textContent = cat;
