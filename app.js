@@ -1,21 +1,32 @@
 /**
  * 부부 공동 가계부 Application Logic
- * Supports LocalStorage + Google Apps Script Web App Realtime Sync
+ * Powered by Firebase Realtime Database for Zero-Config Instant Sync
  */
+
+// Embedded Dedicated Firebase Cloud Config
+const firebaseConfig = {
+  databaseURL: "https://couple-accountbook-default-rtdb.firebaseio.com"
+};
+
+// Initialize Firebase
+if (!firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
+}
+const db = firebase.database();
 
 // Global State
 const state = {
   currentYear: 2026,
-  currentMonth: 8, // 1-indexed (8 = August)
-  type: 'expense', // 'expense' or 'income'
+  currentMonth: 8,
+  type: 'expense',
   selectedPayMethod: '현대카드',
   selectedCategory: '식비',
   editingTxId: null,
   activePayFilter: 'ALL',
   activeCategoryFilter: 'ALL',
   searchQuery: '',
-  
-  // Custom Tag Lists (Matched with user's image)
+  roomCode: 'couple-family-room-2026', // Default room code
+
   payMethods: [
     '현대카드', '신한카드', '오동백', '동백', '국민카드',
     '네이버포인트', '신한포인트', '현금', '통장입금', '오국민(쿠팡)'
@@ -26,10 +37,9 @@ const state = {
     '교통비', '운동', '의', '주', '연금', '대출이자',
     '소영', '의료비', '예비자금', '상연용돈', '소영용돈',
     '특수생활비', '보험', '통신비', '동생', '고정비',
-    '주택청약', '청년', '투자'
+    '주택청약', '청년', '투자', '급여'
   ],
   
-  // Monthly Budgets
   budgets: {
     '식비': 500000,
     '생활비': 300000,
@@ -39,58 +49,10 @@ const state = {
     '통신비': 80000
   },
 
-  // Transactions Master Data Array
-  transactions: [],
-
-  // Google Sheets Sync Config
-  appsScriptUrl: ''
+  transactions: []
 };
 
-// Google Apps Script Sample Backend Code
-const GAS_CODE_TEMPLATE = `
-function doGet(e) {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-  var data = sheet.getDataRange().getValues();
-  var result = [];
-  if (data.length > 1) {
-    var headers = data[0];
-    for (var i = 1; i < data.length; i++) {
-      var row = data[i];
-      var obj = {};
-      for (var j = 0; j < headers.length; j++) {
-        obj[headers[j]] = row[j];
-      }
-      result.push(obj);
-    }
-  }
-  return ContentService.createTextOutput(JSON.stringify(result))
-    .setMimeType(ContentService.MimeType.JSON)
-    .setHeader("Access-Control-Allow-Origin", "*");
-}
-
-function doPost(e) {
-  try {
-    var contents = JSON.parse(e.postData.contents);
-    var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-    sheet.clear();
-    var headers = ["id", "type", "date", "amount", "payMethod", "category", "memo"];
-    sheet.appendRow(headers);
-    for (var i = 0; i < contents.length; i++) {
-      var item = contents[i];
-      sheet.appendRow([item.id, item.type, item.date, item.amount, item.payMethod, item.category, item.memo]);
-    }
-    return ContentService.createTextOutput(JSON.stringify({ status: "success" }))
-      .setMimeType(ContentService.MimeType.JSON)
-      .setHeader("Access-Control-Allow-Origin", "*");
-  } catch(err) {
-    return ContentService.createTextOutput(JSON.stringify({ status: "error", message: err.toString() }))
-      .setMimeType(ContentService.MimeType.JSON)
-      .setHeader("Access-Control-Allow-Origin", "*");
-  }
-}
-`;
-
-// Initial Sample Data (Reflecting user's screenshot sample items)
+// Initial Sample Data
 const INITIAL_SAMPLE_DATA = [
   { id: 'tx-1', type: 'income', date: '2026-08-06', amount: 1000000, payMethod: '현금', category: '급여', memo: '급여' },
   { id: 'tx-2', type: 'expense', date: '2026-08-04', amount: 20940, payMethod: '오국민(쿠팡)', category: '생활비', memo: '바디컴 대용량 필터본품' },
@@ -100,31 +62,28 @@ const INITIAL_SAMPLE_DATA = [
   { id: 'tx-6', type: 'expense', date: '2026-08-01', amount: 42550, payMethod: '오동백', category: '식비', memo: '마트 장보기' }
 ];
 
-// Initialize Charts
 let categoryChartInstance = null;
 let payMethodChartInstance = null;
+let roomRef = null;
 
-// Initialization
 document.addEventListener('DOMContentLoaded', () => {
   loadStoredData();
   setupEventListeners();
+  initFirebaseSync();
   renderApp();
   initCharts();
-
-  // If sync URL is saved, automatically fetch latest data on page load
-  if (state.appsScriptUrl) {
-    fetchFromGoogleSheets(true);
-  }
 });
 
-// Load stored data from localStorage
+// Check URL query parameters for room code invite link (?room=코드)
 function loadStoredData() {
-  const savedTx = localStorage.getItem('couple_budget_transactions');
-  if (savedTx) {
-    try { state.transactions = JSON.parse(savedTx); } catch (e) { state.transactions = INITIAL_SAMPLE_DATA; }
+  const urlParams = new URLSearchParams(window.location.search);
+  const roomParam = urlParams.get('room');
+  if (roomParam) {
+    state.roomCode = roomParam;
+    localStorage.setItem('couple_room_code', roomParam);
   } else {
-    state.transactions = INITIAL_SAMPLE_DATA;
-    saveTransactions();
+    const savedRoom = localStorage.getItem('couple_room_code');
+    if (savedRoom) state.roomCode = savedRoom;
   }
 
   const savedPay = localStorage.getItem('couple_budget_pay_methods');
@@ -136,32 +95,49 @@ function loadStoredData() {
   const savedBudgets = localStorage.getItem('couple_budget_budgets');
   if (savedBudgets) state.budgets = JSON.parse(savedBudgets);
 
-  // Check URL query parameters for 'sync' (so partner can open shared link directly connected)
-  const urlParams = new URLSearchParams(window.location.search);
-  const syncUrlParam = urlParams.get('sync');
-  if (syncUrlParam) {
-    state.appsScriptUrl = decodeURIComponent(syncUrlParam);
-    localStorage.setItem('couple_budget_gas_url', state.appsScriptUrl);
-  } else {
-    const savedUrl = localStorage.getItem('couple_budget_gas_url');
-    if (savedUrl) state.appsScriptUrl = savedUrl;
-  }
-
   const currentTheme = localStorage.getItem('couple_budget_theme') || 'light';
   document.documentElement.setAttribute('data-theme', currentTheme);
 
-  // Set default form date to today or 2026-08-07
-  document.getElementById('txDate').value = '2026-08-07';
+  document.getElementById('txDate').value = new Date().toISOString().split('T')[0];
 }
 
-function saveTransactions(shouldSyncToGoogle = true) {
-  localStorage.setItem('couple_budget_transactions', JSON.stringify(state.transactions));
-  if (shouldSyncToGoogle) {
-    syncToGoogleSheetsIfNeeded();
+// Instant Realtime Sync Setup with Firebase
+function initFirebaseSync() {
+  if (roomRef) {
+    roomRef.off(); // Detach previous listener
+  }
+
+  roomRef = db.ref('rooms/' + state.roomCode);
+
+  // Listen to realtime updates on this couple room
+  roomRef.on('value', (snapshot) => {
+    const val = snapshot.val();
+    if (val && val.transactions) {
+      state.transactions = val.transactions;
+      if (val.budgets) state.budgets = val.budgets;
+      if (val.payMethods) state.payMethods = val.payMethods;
+      if (val.categories) state.categories = val.categories;
+    } else {
+      // If room is new, populate initial data
+      state.transactions = INITIAL_SAMPLE_DATA;
+      pushDataToFirebase();
+    }
+    renderApp();
+  });
+}
+
+function pushDataToFirebase() {
+  if (roomRef) {
+    roomRef.set({
+      transactions: state.transactions,
+      budgets: state.budgets,
+      payMethods: state.payMethods,
+      categories: state.categories,
+      lastUpdated: Date.now()
+    });
   }
 }
 
-// Global Event Listeners
 function setupEventListeners() {
   // Theme Toggle
   document.getElementById('themeToggleBtn').addEventListener('click', () => {
@@ -267,15 +243,11 @@ function setupEventListeners() {
   document.getElementById('restoreFileInput').addEventListener('change', importBackupJSON);
   document.getElementById('excelExportBtn').addEventListener('click', exportToCSV);
 
-  // Google Sync Modal Controls
-  document.getElementById('googleSyncBtn').addEventListener('click', openSyncModal);
-  document.getElementById('closeSyncModalBtn').addEventListener('click', closeSyncModal);
-  document.getElementById('testAndSaveSyncBtn').addEventListener('click', saveAndTestGASUrl);
-  document.getElementById('syncNowBtn').addEventListener('click', fetchFromGoogleSheets);
-  document.getElementById('copyScriptCodeBtn').addEventListener('click', () => {
-    navigator.clipboard.writeText(GAS_CODE_TEMPLATE);
-    alert('구글 앱스 스크립트 코드가 클립보드에 복사되었습니다!');
-  });
+  // Couple Room Modal
+  document.getElementById('coupleRoomBtn').addEventListener('click', openRoomModal);
+  document.getElementById('closeRoomModalBtn').addEventListener('click', () => document.getElementById('coupleRoomModal').classList.add('hidden'));
+  document.getElementById('saveRoomCodeBtn').addEventListener('click', saveRoomCode);
+  document.getElementById('copyInviteLinkBtn').addEventListener('click', copyInviteLink);
 
   // Manage Payment Methods & Categories Modals
   document.getElementById('managePayMethodsBtn').addEventListener('click', () => openManageModal('payMethods'));
@@ -298,7 +270,6 @@ function renderApp() {
   renderTransactionList();
 }
 
-// Render Payment Method Chips in Form
 function renderPayMethodChips() {
   const container = document.getElementById('payMethodChips');
   container.innerHTML = '';
@@ -314,7 +285,6 @@ function renderPayMethodChips() {
   });
 }
 
-// Render Category Chips in Form
 function renderCategoryChips() {
   const container = document.getElementById('categoryChips');
   container.innerHTML = '';
@@ -330,7 +300,6 @@ function renderCategoryChips() {
   });
 }
 
-// Populate Filter Select Elements
 function renderFilterOptions() {
   const paySelect = document.getElementById('filterPayMethod');
   paySelect.innerHTML = '<option value="ALL">전체 결제수단</option>';
@@ -353,7 +322,6 @@ function renderFilterOptions() {
   });
 }
 
-// Filter transactions by current Year & Month
 function getCurrentMonthTransactions() {
   return state.transactions.filter(tx => {
     if (!tx.date) return false;
@@ -362,7 +330,6 @@ function getCurrentMonthTransactions() {
   });
 }
 
-// Summary Top Cards Calculation
 function renderSummaryCards() {
   const monthTxs = getCurrentMonthTransactions();
   
@@ -375,7 +342,6 @@ function renderSummaryCards() {
     else totalExpense += amt;
   });
 
-  // Target Budget Total
   let totalBudget = 0;
   Object.values(state.budgets).forEach(b => totalBudget += Number(b) || 0);
 
@@ -389,11 +355,9 @@ function renderSummaryCards() {
   document.getElementById('summaryBalance').textContent = `${balance.toLocaleString()} 원`;
 }
 
-// Render Transaction List (TAB 1)
 function renderTransactionList() {
   const monthTxs = getCurrentMonthTransactions();
   
-  // Render Pay Summary Bar Chips
   const paySummaryChipsContainer = document.getElementById('paySummaryChips');
   paySummaryChipsContainer.innerHTML = '';
   
@@ -414,7 +378,6 @@ function renderTransactionList() {
     paySummaryChipsContainer.appendChild(chip);
   });
 
-  // Filter List Logic
   let filtered = monthTxs.filter(tx => {
     if (state.activePayFilter !== 'ALL' && tx.payMethod !== state.activePayFilter) return false;
     if (state.activeCategoryFilter !== 'ALL' && tx.category !== state.activeCategoryFilter) return false;
@@ -429,10 +392,8 @@ function renderTransactionList() {
     return true;
   });
 
-  // Sort descending by date
   filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-  // Group by Date
   const container = document.getElementById('txListContainer');
   container.innerHTML = '';
 
@@ -494,7 +455,6 @@ function renderTransactionList() {
   });
 }
 
-// Add or Update Transaction Form Action
 function handleAddOrUpdateTx() {
   const date = document.getElementById('txDate').value;
   const amount = parseInt(document.getElementById('txAmount').value, 10);
@@ -506,7 +466,6 @@ function handleAddOrUpdateTx() {
   }
 
   if (state.editingTxId) {
-    // Edit Existing
     const idx = state.transactions.findIndex(t => t.id === state.editingTxId);
     if (idx !== -1) {
       state.transactions[idx] = {
@@ -522,7 +481,6 @@ function handleAddOrUpdateTx() {
     state.editingTxId = null;
     document.getElementById('addTxSubmitBtn').textContent = '+ 내역 추가하기';
   } else {
-    // Create New
     const newTx = {
       id: 'tx-' + Date.now(),
       type: state.type,
@@ -535,15 +493,12 @@ function handleAddOrUpdateTx() {
     state.transactions.push(newTx);
   }
 
-  saveTransactions();
-  renderApp();
+  pushDataToFirebase();
 
-  // Reset Memo and Amount
   document.getElementById('txAmount').value = '';
   document.getElementById('txMemo').value = '';
 }
 
-// Edit & Delete Window Helpers
 window.editTx = function(id) {
   const tx = state.transactions.find(t => t.id === id);
   if (!tx) return;
@@ -573,12 +528,10 @@ window.editTx = function(id) {
 window.deleteTx = function(id) {
   if (confirm('이 내역을 삭제하시겠습니까?')) {
     state.transactions = state.transactions.filter(t => t.id !== id);
-    saveTransactions();
-    renderApp();
+    pushDataToFirebase();
   }
 };
 
-// Render Calendar (TAB 2)
 function renderCalendar() {
   const grid = document.getElementById('calendarGrid');
   grid.innerHTML = '';
@@ -598,7 +551,6 @@ function renderCalendar() {
 
   const monthTxs = getCurrentMonthTransactions();
 
-  // Empty cells for alignment
   for (let i = 0; i < startDayOfWeek; i++) {
     const emptyCell = document.createElement('div');
     emptyCell.className = 'cal-day-cell empty';
@@ -629,7 +581,6 @@ function renderCalendar() {
   }
 }
 
-// Render Budgets (TAB 3)
 function renderBudgets() {
   const container = document.getElementById('budgetList');
   container.innerHTML = '';
@@ -667,12 +618,11 @@ function saveBudgets() {
     const val = parseInt(inp.value, 10) || 0;
     state.budgets[cat] = val;
   });
-  localStorage.setItem('couple_budget_budgets', JSON.stringify(state.budgets));
+  pushDataToFirebase();
   alert('카테고리별 목표 예산이 저장되었습니다!');
   renderSummaryCards();
 }
 
-// Update Analysis Charts (TAB 4)
 function initCharts() {
   const catCtx = document.getElementById('categoryChart').getContext('2d');
   categoryChartInstance = new Chart(catCtx, {
@@ -692,7 +642,6 @@ function initCharts() {
 function updateCharts() {
   const monthTxs = getCurrentMonthTransactions().filter(t => t.type === 'expense');
 
-  // Category Totals
   const catTotals = {};
   monthTxs.forEach(t => catTotals[t.category] = (catTotals[t.category] || 0) + Number(t.amount));
 
@@ -705,7 +654,6 @@ function updateCharts() {
   categoryChartInstance.data.datasets[0].backgroundColor = catColors;
   categoryChartInstance.update();
 
-  // Pay Method Totals
   const payTotals = {};
   monthTxs.forEach(t => payTotals[t.payMethod] = (payTotals[t.payMethod] || 0) + Number(t.amount));
 
@@ -714,7 +662,6 @@ function updateCharts() {
   payMethodChartInstance.update();
 }
 
-// Emoji Mapping Helper
 function getCategoryEmoji(cat) {
   const map = {
     '식비': '🛒', '생활비': '🏠', '관리비': '🏢', '가스비': '🔥', '유류비': '⛽', '하이패스': '🛣️',
@@ -727,7 +674,6 @@ function getCategoryEmoji(cat) {
   return map[cat] || '🏷️';
 }
 
-// Backup & Restore JSON
 function exportBackupJSON() {
   const backupData = {
     transactions: state.transactions,
@@ -754,11 +700,7 @@ function importBackupJSON(e) {
       if (data.categories) state.categories = data.categories;
       if (data.budgets) state.budgets = data.budgets;
 
-      saveTransactions();
-      localStorage.setItem('couple_budget_pay_methods', JSON.stringify(state.payMethods));
-      localStorage.setItem('couple_budget_categories', JSON.stringify(state.categories));
-      localStorage.setItem('couple_budget_budgets', JSON.stringify(state.budgets));
-
+      pushDataToFirebase();
       alert('데이터 복원이 완료되었습니다!');
       renderApp();
     } catch (err) {
@@ -768,9 +710,8 @@ function importBackupJSON(e) {
   reader.readAsText(file);
 }
 
-// Export Excel CSV
 function exportToCSV() {
-  let csvContent = "\uFEFF"; // UTF-8 BOM
+  let csvContent = "\uFEFF";
   csvContent += "ID,구분,날짜,금액,결제수단,카테고리,메모\n";
 
   state.transactions.forEach(t => {
@@ -785,82 +726,31 @@ function exportToCSV() {
   a.click();
 }
 
-// Google Sheets Sync Functions
-function openSyncModal() {
-  document.getElementById('googleSyncModal').classList.remove('hidden');
-  document.getElementById('appsScriptUrlInput').value = state.appsScriptUrl;
-  document.getElementById('appsScriptCodeSample').value = GAS_CODE_TEMPLATE;
+// Couple Room Controls
+function openRoomModal() {
+  document.getElementById('coupleRoomModal').classList.remove('hidden');
+  document.getElementById('roomCodeInput').value = state.roomCode;
+}
 
-  if (state.appsScriptUrl) {
-    document.getElementById('syncStatusText').className = 'badge success';
-    document.getElementById('syncStatusText').textContent = '구글 시트 연동 중';
+function saveRoomCode() {
+  const newCode = document.getElementById('roomCodeInput').value.trim();
+  if (newCode) {
+    state.roomCode = newCode;
+    localStorage.setItem('couple_room_code', newCode);
+    initFirebaseSync();
+    document.getElementById('coupleRoomModal').classList.add('hidden');
+    alert('부부 공유 코드가 변경 및 저장되었습니다!');
   }
 }
 
-function closeSyncModal() {
-  document.getElementById('googleSyncModal').classList.add('hidden');
+function copyInviteLink() {
+  const baseUrl = window.location.origin + window.location.pathname;
+  const inviteUrl = `${baseUrl}?room=${encodeURIComponent(state.roomCode)}`;
+  navigator.clipboard.writeText(inviteUrl);
+  alert('카톡 초댓링크가 복사되었습니다! 상대방에게 전달하시면 클릭 한 번으로 자동 동기화됩니다:\n' + inviteUrl);
 }
 
-function saveAndTestGASUrl() {
-  const url = document.getElementById('appsScriptUrlInput').value.trim();
-  if (!url) {
-    alert('Apps Script Web App URL을 입력해주세요.');
-    return;
-  }
-  state.appsScriptUrl = url;
-  localStorage.setItem('couple_budget_gas_url', url);
-  
-  syncToGoogleSheetsIfNeeded();
-}
-
-function syncToGoogleSheetsIfNeeded() {
-  if (!state.appsScriptUrl) return;
-
-  fetch(state.appsScriptUrl, {
-    method: 'POST',
-    mode: 'no-cors',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(state.transactions)
-  }).then(() => {
-    const statusText = document.getElementById('syncStatusText');
-    if (statusText) {
-      statusText.className = 'badge success';
-      statusText.textContent = '구글 시트 실시간 동기화 완료!';
-    }
-  }).catch(err => {
-    console.error('GAS Sync Error:', err);
-  });
-}
-
-function fetchFromGoogleSheets(isSilent = true) {
-  if (!state.appsScriptUrl) {
-    if (!isSilent) alert('연동된 구글 시트 URL이 없습니다. 먼저 연동 설정을 완료해주세요.');
-    return;
-  }
-
-  fetch(state.appsScriptUrl)
-    .then(res => res.json())
-    .then(data => {
-      if (Array.isArray(data) && data.length > 0) {
-        state.transactions = data.map(item => ({
-          ...item,
-          amount: Number(item.amount)
-        }));
-        localStorage.setItem('couple_budget_transactions', JSON.stringify(state.transactions));
-        renderApp();
-        if (!isSilent) alert('구글 시트로부터 최신 내역을 불러왔습니다!');
-      } else if (Array.isArray(data) && data.length === 0) {
-        // Empty sheet - sync current transactions to sheet
-        syncToGoogleSheetsIfNeeded();
-      }
-    })
-    .catch(err => {
-      console.error('Sync Fetch Error:', err);
-      if (!isSilent) alert('구글 시트 불러오기 오류: ' + err.message);
-    });
-}
-
-// Modal Tag Management (Payment Methods / Categories)
+// Modal Tag Management
 let currentManageType = 'payMethods';
 
 function openManageModal(type) {
@@ -893,7 +783,7 @@ document.getElementById('addNewTagBtn').addEventListener('click', () => {
   const name = input.value.trim();
   if (name && !state[currentManageType].includes(name)) {
     state[currentManageType].push(name);
-    localStorage.setItem(`couple_budget_${currentManageType === 'payMethods' ? 'pay_methods' : 'categories'}`, JSON.stringify(state[currentManageType]));
+    pushDataToFirebase();
     input.value = '';
     renderManageTagList();
     renderApp();
@@ -902,7 +792,7 @@ document.getElementById('addNewTagBtn').addEventListener('click', () => {
 
 window.removeTagItem = function(idx) {
   state[currentManageType].splice(idx, 1);
-  localStorage.setItem(`couple_budget_${currentManageType === 'payMethods' ? 'pay_methods' : 'categories'}`, JSON.stringify(state[currentManageType]));
+  pushDataToFirebase();
   renderManageTagList();
   renderApp();
 };
