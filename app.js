@@ -25,7 +25,7 @@ const state = {
   activePayFilter: 'ALL',
   activeCategoryFilter: 'ALL',
   searchQuery: '',
-  roomCode: 'couple-family-room-2026', // Default room code
+  roomCode: 'myhouse-main-room', // Fixed shared room code so PC and mobile auto-connect!
 
   payMethods: [
     '현대카드', '신한카드', '오동백', '동백', '국민카드',
@@ -74,18 +74,10 @@ document.addEventListener('DOMContentLoaded', () => {
   initCharts();
 });
 
-// Check URL query parameters for room code invite link (?room=코드)
 function loadStoredData() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const roomParam = urlParams.get('room');
-  if (roomParam) {
-    state.roomCode = roomParam;
-    localStorage.setItem('couple_room_code', roomParam);
-  } else {
-    const savedRoom = localStorage.getItem('couple_room_code');
-    if (savedRoom) state.roomCode = savedRoom;
-  }
-
+  // Always enforce the shared room code 'myhouse-main-room'
+  state.roomCode = 'myhouse-main-room';
+  
   const savedPay = localStorage.getItem('couple_budget_pay_methods');
   if (savedPay) state.payMethods = JSON.parse(savedPay);
 
