@@ -483,7 +483,17 @@ function initFirebaseSync() {
   roomRef.on('value', (snapshot) => {
     const val = snapshot.val();
     if (val && val.transactions && val.transactions.length > 0) {
-      state.transactions = val.transactions;
+      // Merge master items (4~7월) if missing from Firebase
+      const existingIds = new Set(val.transactions.map(t => t.id));
+      const missingMasterItems = INITIAL_SAMPLE_DATA.filter(t => !existingIds.has(t.id));
+      
+      if (missingMasterItems.length > 0) {
+        state.transactions = [...val.transactions, ...missingMasterItems];
+        pushDataToFirebase();
+      } else {
+        state.transactions = val.transactions;
+      }
+      
       if (val.budgets) state.budgets = val.budgets;
       if (val.payMethods) state.payMethods = val.payMethods;
       if (val.categories) state.categories = val.categories;
