@@ -469,7 +469,7 @@ function handleAddOrUpdateTx() {
   }
 
   if (state.editingTxId) {
-    const idx = state.transactions.findIndex(t => t.id === state.editingTxId);
+    const idx = state.transactions.findIndex(t => String(t.id) === String(state.editingTxId));
     if (idx !== -1) {
       state.transactions[idx] = {
         ...state.transactions[idx],
@@ -482,7 +482,6 @@ function handleAddOrUpdateTx() {
       };
     }
     state.editingTxId = null;
-    document.getElementById('addTxSubmitBtn').textContent = '+ 내역 추가하기';
   } else {
     const newTx = {
       id: 'tx-' + Date.now(),
@@ -496,6 +495,10 @@ function handleAddOrUpdateTx() {
     state.transactions.push(newTx);
   }
 
+  const submitBtn = document.getElementById('addTxSubmitBtn');
+  submitBtn.textContent = '+ 내역 추가하기';
+  submitBtn.style.backgroundColor = '';
+
   pushDataToFirebase();
 
   document.getElementById('txAmount').value = '';
@@ -503,29 +506,40 @@ function handleAddOrUpdateTx() {
 }
 
 window.editTx = function(id) {
-  const tx = state.transactions.find(t => t.id === id);
-  if (!tx) return;
+  const tx = state.transactions.find(t => String(t.id) === String(id));
+  if (!tx) {
+    alert('해당 내역을 찾을 수 없습니다.');
+    return;
+  }
 
-  state.editingTxId = id;
+  state.editingTxId = tx.id;
   state.type = tx.type;
+
+  // Toggle type button state visually
   if (tx.type === 'expense') {
-    document.getElementById('typeExpenseBtn').click();
+    document.getElementById('typeExpenseBtn').classList.add('active');
+    document.getElementById('typeIncomeBtn').classList.remove('active');
   } else {
-    document.getElementById('typeIncomeBtn').click();
+    document.getElementById('typeIncomeBtn').classList.add('active');
+    document.getElementById('typeExpenseBtn').classList.remove('active');
   }
 
   document.getElementById('txDate').value = tx.date;
   document.getElementById('txAmount').value = tx.amount;
   document.getElementById('txMemo').value = tx.memo || '';
   
-  state.selectedPayMethod = tx.payMethod || state.payMethods[0];
-  state.selectedCategory = tx.category || state.categories[0];
+  state.selectedPayMethod = tx.payMethod || (state.type === 'income' ? '현금' : state.payMethods[0]);
+  state.selectedCategory = tx.category || (state.type === 'income' ? state.incomeCategories[0] : state.categories[0]);
 
   renderPayMethodChips();
   renderCategoryChips();
 
-  document.getElementById('addTxSubmitBtn').textContent = '✏️ 내역 수정 완료';
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  const submitBtn = document.getElementById('addTxSubmitBtn');
+  submitBtn.textContent = '✏️ 선택한 내역 수정 완료';
+  submitBtn.style.backgroundColor = '#f59e0b'; // Highlight button in orange during edit
+
+  // Scroll smoothly to input panel
+  document.querySelector('.left-panel').scrollIntoView({ behavior: 'smooth' });
 };
 
 window.deleteTx = function(id) {
