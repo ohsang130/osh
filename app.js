@@ -832,9 +832,9 @@ function syncToGoogleSheetsIfNeeded() {
   });
 }
 
-function fetchFromGoogleSheets() {
+function fetchFromGoogleSheets(isSilent = true) {
   if (!state.appsScriptUrl) {
-    alert('연동된 구글 시트 URL이 없습니다. 먼저 연동 설정을 완료해주세요.');
+    if (!isSilent) alert('연동된 구글 시트 URL이 없습니다. 먼저 연동 설정을 완료해주세요.');
     return;
   }
 
@@ -846,15 +846,17 @@ function fetchFromGoogleSheets() {
           ...item,
           amount: Number(item.amount)
         }));
-        saveTransactions();
+        localStorage.setItem('couple_budget_transactions', JSON.stringify(state.transactions));
         renderApp();
-        alert('구글 시트로부터 최신 내역을 성공적으로 불러왔습니다!');
-      } else {
-        alert('구글 시트에서 가져올 내역이 없습니다.');
+        if (!isSilent) alert('구글 시트로부터 최신 내역을 불러왔습니다!');
+      } else if (Array.isArray(data) && data.length === 0) {
+        // Empty sheet - sync current transactions to sheet
+        syncToGoogleSheetsIfNeeded();
       }
     })
     .catch(err => {
-      alert('구글 시트 데이터를 불러오는데 실패했습니다: ' + err.message);
+      console.error('Sync Fetch Error:', err);
+      if (!isSilent) alert('구글 시트 불러오기 오류: ' + err.message);
     });
 }
 
