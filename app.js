@@ -1159,7 +1159,9 @@ function exportToCSV() {
   monthTxs.forEach(t => {
     const dateFormatted = t.date;
     const typeLabel = t.type === 'income' ? '수입' : '지출';
-    const amountStr = t.type === 'income' ? `+${Number(t.amount).toLocaleString()}` : `-${Number(t.amount).toLocaleString()}`;
+    const numAmt = Number(t.amount) || 0;
+    const amountVal = t.type === 'income' ? numAmt : -numAmt;
+    const amountStr = `"${amountVal.toLocaleString()}"`; // Quote to keep comma inside single cell
     const memoStr = `"${(t.memo || t.category).replace(/"/g, '""')}"`;
     const payStr = `"${(t.payMethod || '').replace(/"/g, '""')}"`;
     const catStr = `"${t.category}"`;
