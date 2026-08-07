@@ -1121,18 +1121,56 @@ function importBackupJSON(e) {
 }
 
 function exportToCSV() {
-  let csvContent = "\uFEFF";
-  csvContent += "ID,구분,날짜,금액,결제수단,카테고리,메모\n";
+  const monthTxs = getCurrentMonthTransactions();
 
-  state.transactions.forEach(t => {
-    const row = [t.id, t.type, t.date, t.amount, `"${t.payMethod}"`, `"${t.category}"`, `"${t.memo || ''}"`].join(",");
-    csvContent += row + "\n";
+  if (monthTxs.length === 0) {
+    alert(`${state.currentYear}년 ${state.currentMonth}월 내역이 없습니다.`);
+    return;
+  }
+
+  // Sort by date ascending
+  monthTxs.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+  let totalIncome = 0;
+  let totalExpense = 0;
+  monthTxs.forEach(t => {
+    const amt = Number(t.amount) || 0;
+    if (t.type === 'income') totalIncome += amt;
+    else totalExpense += amt;
+  });
+
+  const balance = totalIncome - totalExpense;
+
+  let csvContent = "\uFEFF"; // UTF-8 BOM for Excel Korean support
+
+  // Title & Monthly Summary Header Block
+  csvContent += `==============================================\n`;
+  csvContent += `💰 부부 공동가계부 - ${state.currentYear}년 ${state.currentMonth}월 월간 리포트\n`;
+  csvContent += `==============================================\n`;
+  csvContent += `총 수입,${totalIncome.toLocaleString()} 원\n`;
+  csvContent += `총 지출,${totalExpense.toLocaleString()} 원\n`;
+  csvContent += `이번 달 잔액,${balance.toLocaleString()} 원\n`;
+  csvContent += `==============================================\n\n`;
+
+  // Main Data Table Header
+  csvContent += "날짜,구분,카테고리,사용내역/메모,금액(원),결제수단\n";
+
+  // Rows
+  monthTxs.forEach(t => {
+    const dateFormatted = t.date;
+    const typeLabel = t.type === 'income' ? '수입' : '지출';
+    const amountStr = t.type === 'income' ? `+${Number(t.amount).toLocaleString()}` : `-${Number(t.amount).toLocaleString()}`;
+    const memoStr = `"${(t.memo || t.category).replace(/"/g, '""')}"`;
+    const payStr = `"${(t.payMethod || '').replace(/"/g, '""')}"`;
+    const catStr = `"${t.category}"`;
+
+    csvContent += `${dateFormatted},${typeLabel},${catStr},${memoStr},${amountStr},${payStr}\n`;
   });
 
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = `부부가계부_내역_${state.currentYear}_${state.currentMonth}.csv`;
+  a.download = `부부가계부_${state.currentYear}년_${state.currentMonth}월_내역.csv`;
   a.click();
 }
 
