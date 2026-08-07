@@ -992,6 +992,7 @@ function renderBudgets() {
   state.categories.forEach(cat => {
     const targetBudget = Number(state.budgets[cat]) || 0;
     const actualExpense = monthTxs.filter(t => t.category === cat).reduce((sum, t) => sum + Number(t.amount), 0);
+    const remaining = targetBudget - actualExpense;
     const pct = targetBudget > 0 ? Math.min(Math.round((actualExpense / targetBudget) * 100), 100) : 0;
     const isOver = actualExpense > targetBudget && targetBudget > 0;
 
@@ -999,9 +1000,16 @@ function renderBudgets() {
     item.className = 'budget-item';
     item.innerHTML = `
       <div class="budget-item-top">
-        <div class="budget-cat-title">${getCategoryEmoji(cat)} ${cat}</div>
+        <div class="budget-cat-title">
+          ${getCategoryEmoji(cat)} ${cat}
+          ${targetBudget > 0 ? (
+            isOver 
+              ? `<span class="badge" style="background:#fef2f2; color:#ef4444; margin-left:8px; font-weight:700;">⚠️ ${Math.abs(remaining).toLocaleString()}원 초과</span>`
+              : `<span class="badge" style="background:#ecfdf5; color:#10b981; margin-left:8px; font-weight:700;">💵 남은 예산: ${remaining.toLocaleString()}원</span>`
+          ) : ''}
+        </div>
         <div class="budget-inputs">
-          <span style="font-size:12px; color:var(--text-secondary);">지출: ${actualExpense.toLocaleString()} 원 /</span>
+          <span style="font-size:12px; color:var(--text-secondary);">지출: <b>${actualExpense.toLocaleString()} 원</b> /</span>
           <label style="font-size:12px;">목표 예산:</label>
           <input type="number" class="budget-input-field" data-cat="${cat}" value="${targetBudget}" placeholder="0"> 원
         </div>
