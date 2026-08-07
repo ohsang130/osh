@@ -326,60 +326,60 @@ const INITIAL_SAMPLE_DATA = [
 
   { id: 'm6-110', type: 'expense', date: '2026-06-30', amount: 246300, payMethod: '통장입금', category: '대출이자', memo: '대출이자' },
 
-  // ================= 7월 데이터 =================
+  // ================= 7월 데이터 (최신 수정본) =================
   // 수입
-  { id: 'j-1', type: 'income', date: '2026-07-03', amount: 2484720, payMethod: '현금', category: '급여', memo: '6월 급여' },
+  { id: 'j-1', type: 'income', date: '2026-07-03', amount: 2484720, payMethod: '현금', category: '급여', memo: '6월' },
   { id: 'j-2', type: 'income', date: '2026-07-15', amount: 100000, payMethod: '현금', category: '추가수입', memo: '휴가비' },
   { id: 'j-3', type: 'income', date: '2026-07-22', amount: 75000, payMethod: '현금', category: '추가수입', memo: '소영생일' },
   { id: 'j-4', type: 'income', date: '2026-07-22', amount: 100000, payMethod: '현금', category: '추가수입', memo: '소영생일' },
   { id: 'j-5', type: 'income', date: '2026-07-22', amount: 300000, payMethod: '현금', category: '추가수입', memo: '소영생일' },
-  { id: 'j-6', type: 'income', date: '2026-07-20', amount: 78430, payMethod: '현금', category: '기타수입', memo: '선풍기 (환불입금)' },
-  { id: 'j-7', type: 'income', date: '2026-07-23', amount: 44750, payMethod: '현금', category: '기타수입', memo: '속옷 (환불입금)' },
+  { id: 'j-6', type: 'income', date: '2026-07-20', amount: 78430, payMethod: '현금', category: '기타수입', memo: '선풍기 (환불급임금)' },
+  { id: 'j-7', type: 'income', date: '2026-07-23', amount: 44750, payMethod: '현금', category: '기타수입', memo: '속옷 (환불급임금)' },
 
-  // 지출 그룹 1
+  // 현금 / 네이버포인트 지출
   { id: 'j-8', type: 'expense', date: '2026-07-01', amount: 85000, payMethod: '현금', category: '소영용돈', memo: '제주' },
   { id: 'j-9', type: 'expense', date: '2026-07-09', amount: 20900, payMethod: '네이버포인트', category: '식비', memo: '연세두유 (소영네이버)' },
   { id: 'j-10', type: 'expense', date: '2026-07-16', amount: 67600, payMethod: '현금', category: '소영용돈', memo: '제주' },
-  { id: 'j-11', type: 'expense', date: '2026-07-23', amount: 100000, payMethod: '현금', category: '학식', memo: '겐로쿠우동' },
+  { id: 'j-11', type: 'expense', date: '2026-07-23', amount: 10000, payMethod: '현금', category: '학식', memo: '겐로쿠우동' },
   { id: 'j-12', type: 'expense', date: '2026-07-31', amount: 10000, payMethod: '현금', category: '학식', memo: '동동국밥' },
 
-  // 지출 그룹 2 (일반 지출)
-  { id: 'j-13', type: 'expense', date: '2026-07-02', amount: 4000, payMethod: '현대카드', category: '생활비', memo: '다이소' },
-  { id: 'j-14', type: 'expense', date: '2026-07-02', amount: 4000, payMethod: '현대카드', category: '생활비', memo: '다이소' },
-  { id: 'j-15', type: 'expense', date: '2026-07-03', amount: 10000, payMethod: '현대카드', category: '학식', memo: '노브랜드 (고유가)' },
-  { id: 'j-16', type: 'expense', date: '2026-07-04', amount: 6500, payMethod: '현대카드', category: '소영용돈', memo: '공차' },
-  { id: 'j-17', type: 'expense', date: '2026-07-05', amount: 13250, payMethod: '현대카드', category: '소영용돈', memo: '파리바게뜨제주' },
-  { id: 'j-18', type: 'expense', date: '2026-07-10', amount: 1000, payMethod: '현대카드', category: '생활비', memo: '다이소' },
-  { id: 'j-19', type: 'expense', date: '2026-07-10', amount: 5000, payMethod: '현대카드', category: '소영', memo: '락휴(양지) 계모임비' },
-  { id: 'j-20', type: 'expense', date: '2026-07-11', amount: 40600, payMethod: '현대카드', category: '의료비', memo: '마리아의원' },
-  { id: 'j-21', type: 'expense', date: '2026-07-11', amount: 132300, payMethod: '현대카드', category: '의료비', memo: '마리아의원' },
-  { id: 'j-22', type: 'expense', date: '2026-07-11', amount: 1650000, payMethod: '현대카드', category: '특수생활비', memo: '에어컨' },
-  { id: 'j-23', type: 'expense', date: '2026-07-12', amount: 9720, payMethod: '현대카드', category: '식비', memo: '이마트' },
-  { id: 'j-24', type: 'expense', date: '2026-07-13', amount: 5000, payMethod: '현대카드', category: '학식', memo: '지지고' },
-  { id: 'j-25', type: 'expense', date: '2026-07-13', amount: 30000, payMethod: '현대카드', category: '유류비', memo: '유류비' },
-  { id: 'j-26', type: 'expense', date: '2026-07-15', amount: 27695, payMethod: '현대카드', category: '보험', memo: '삼성화재' },
-  { id: 'j-27', type: 'expense', date: '2026-07-15', amount: 1000, payMethod: '현대카드', category: '생활비', memo: '다이소' },
-  { id: 'j-28', type: 'expense', date: '2026-07-15', amount: 9000, payMethod: '현대카드', category: '생활비', memo: '다이소' },
-  { id: 'j-29', type: 'expense', date: '2026-07-15', amount: 50000, payMethod: '현대카드', category: '운동', memo: '운동' },
-  { id: 'j-30', type: 'expense', date: '2026-07-17', amount: 7000, payMethod: '현대카드', category: '생활비', memo: '다이소' },
-  { id: 'j-31', type: 'expense', date: '2026-07-17', amount: 1000, payMethod: '현대카드', category: '생활비', memo: '다이소' },
-  { id: 'j-32', type: 'expense', date: '2026-07-17', amount: 30200, payMethod: '현대카드', category: '생활비', memo: '다이소' },
-  { id: 'j-33', type: 'expense', date: '2026-07-19', amount: 17000, payMethod: '현대카드', category: '생활비', memo: '다이소' },
-  { id: 'j-34', type: 'expense', date: '2026-07-19', amount: 7000, payMethod: '현대카드', category: '생활비', memo: '다이소' },
-  { id: 'j-35', type: 'expense', date: '2026-07-19', amount: 990, payMethod: '현대카드', category: '생활비', memo: '이마트' },
-  { id: 'j-36', type: 'expense', date: '2026-07-22', amount: 66000, payMethod: '현대카드', category: '유류비', memo: '주유 (고유가?)' },
-  { id: 'j-37', type: 'expense', date: '2026-07-22', amount: 40000, payMethod: '현대카드', category: '생활비', memo: '속옷' },
-  { id: 'j-38', type: 'expense', date: '2026-07-22', amount: 4200, payMethod: '현대카드', category: '생활비', memo: '주차' },
-  { id: 'j-39', type: 'expense', date: '2026-07-22', amount: 2000, payMethod: '현대카드', category: '생활비', memo: '박물관주차' },
-  { id: 'j-40', type: 'expense', date: '2026-07-22', amount: 1000, payMethod: '현대카드', category: '생활비', memo: '빙수주차' },
-  { id: 'j-41', type: 'expense', date: '2026-07-22', amount: 6000, payMethod: '현대카드', category: '생활비', memo: '다이소' },
-  { id: 'j-42', type: 'expense', date: '2026-07-22', amount: 1500, payMethod: '현대카드', category: '생활비', memo: '이케아' },
-  { id: 'j-43', type: 'expense', date: '2026-07-22', amount: 4000, payMethod: '현대카드', category: '생활비', memo: '사진' },
-  { id: 'j-44', type: 'expense', date: '2026-07-23', amount: 4600, payMethod: '현대카드', category: '소영', memo: '기차' },
-  { id: 'j-45', type: 'expense', date: '2026-07-23', amount: 14800, payMethod: '현대카드', category: '소영', memo: '기차' },
-  { id: 'j-46', type: 'expense', date: '2026-07-24', amount: 5000, payMethod: '현대카드', category: '학식', memo: '지지고 (고유가)' },
-  { id: 'j-47', type: 'expense', date: '2026-07-25', amount: 5900, payMethod: '현대카드', category: '소영', memo: '카페이얼즈' },
-  { id: 'j-48', type: 'expense', date: '2026-07-27', amount: 180110, payMethod: '현대카드', category: '관리비', memo: '관리비' },
+  // 신한카드 지출
+  { id: 'j-13', type: 'expense', date: '2026-07-02', amount: 4000, payMethod: '신한카드', category: '생활비', memo: '다이소' },
+  { id: 'j-14', type: 'expense', date: '2026-07-02', amount: 4000, payMethod: '신한카드', category: '생활비', memo: '다이소' },
+  { id: 'j-15', type: 'expense', date: '2026-07-03', amount: 10000, payMethod: '신한카드', category: '학식', memo: '노브랜드 (고유가)' },
+  { id: 'j-16', type: 'expense', date: '2026-07-04', amount: 6500, payMethod: '신한카드', category: '소영용돈', memo: '공차' },
+  { id: 'j-17', type: 'expense', date: '2026-07-05', amount: 13250, payMethod: '신한카드', category: '소영용돈', memo: '파리바게뜨제주' },
+  { id: 'j-18', type: 'expense', date: '2026-07-10', amount: 1000, payMethod: '신한카드', category: '생활비', memo: '다이소' },
+  { id: 'j-19', type: 'expense', date: '2026-07-10', amount: 5000, payMethod: '신한카드', category: '소영', memo: '락휴(양지) 계모임비' },
+  { id: 'j-20', type: 'expense', date: '2026-07-11', amount: 40600, payMethod: '신한카드', category: '의료비', memo: '마리아의원' },
+  { id: 'j-21', type: 'expense', date: '2026-07-11', amount: 132300, payMethod: '신한카드', category: '의료비', memo: '마리아의원' },
+  { id: 'j-22', type: 'expense', date: '2026-07-11', amount: 1650000, payMethod: '신한카드', category: '특수생활비', memo: '에어컨' },
+  { id: 'j-23', type: 'expense', date: '2026-07-12', amount: 9720, payMethod: '신한카드', category: '식비', memo: '이마트' },
+  { id: 'j-24', type: 'expense', date: '2026-07-13', amount: 5000, payMethod: '신한카드', category: '학식', memo: '지지고' },
+  { id: 'j-25', type: 'expense', date: '2026-07-13', amount: 30000, payMethod: '신한카드', category: '유류비', memo: '유류비' },
+  { id: 'j-26', type: 'expense', date: '2026-07-15', amount: 27695, payMethod: '신한카드', category: '보험', memo: '삼성화재' },
+  { id: 'j-27', type: 'expense', date: '2026-07-15', amount: 1000, payMethod: '신한카드', category: '생활비', memo: '다이소' },
+  { id: 'j-28', type: 'expense', date: '2026-07-15', amount: 9000, payMethod: '신한카드', category: '생활비', memo: '다이소' },
+  { id: 'j-29', type: 'expense', date: '2026-07-15', amount: 50000, payMethod: '신한카드', category: '운동', memo: '운동' },
+  { id: 'j-30', type: 'expense', date: '2026-07-17', amount: 7000, payMethod: '신한카드', category: '생활비', memo: '다이소' },
+  { id: 'j-31', type: 'expense', date: '2026-07-17', amount: 1000, payMethod: '신한카드', category: '생활비', memo: '다이소' },
+  { id: 'j-32', type: 'expense', date: '2026-07-17', amount: 30200, payMethod: '신한카드', category: '생활비', memo: '다이소' },
+  { id: 'j-33', type: 'expense', date: '2026-07-19', amount: 17000, payMethod: '신한카드', category: '생활비', memo: '다이소' },
+  { id: 'j-34', type: 'expense', date: '2026-07-19', amount: 7000, payMethod: '신한카드', category: '생활비', memo: '다이소' },
+  { id: 'j-35', type: 'expense', date: '2026-07-19', amount: 990, payMethod: '신한카드', category: '생활비', memo: '이마트' },
+  { id: 'j-36', type: 'expense', date: '2026-07-22', amount: 66000, payMethod: '신한카드', category: '유류비', memo: '주유' },
+  { id: 'j-37', type: 'expense', date: '2026-07-22', amount: 40000, payMethod: '신한카드', category: '생활비', memo: '속옷' },
+  { id: 'j-38', type: 'expense', date: '2026-07-22', amount: 4200, payMethod: '신한카드', category: '생활비', memo: '주차' },
+  { id: 'j-39', type: 'expense', date: '2026-07-22', amount: 2000, payMethod: '신한카드', category: '생활비', memo: '박물관주차' },
+  { id: 'j-40', type: 'expense', date: '2026-07-22', amount: 1000, payMethod: '신한카드', category: '생활비', memo: '빙수주차' },
+  { id: 'j-41', type: 'expense', date: '2026-07-22', amount: 6000, payMethod: '신한카드', category: '생활비', memo: '다이소' },
+  { id: 'j-42', type: 'expense', date: '2026-07-22', amount: 1500, payMethod: '신한카드', category: '생활비', memo: '이케아' },
+  { id: 'j-43', type: 'expense', date: '2026-07-22', amount: 4000, payMethod: '신한카드', category: '생활비', memo: '사진' },
+  { id: 'j-44', type: 'expense', date: '2026-07-23', amount: 4600, payMethod: '신한카드', category: '소영', memo: '기차' },
+  { id: 'j-45', type: 'expense', date: '2026-07-23', amount: 14800, payMethod: '신한카드', category: '소영', memo: '기차' },
+  { id: 'j-46', type: 'expense', date: '2026-07-24', amount: 5000, payMethod: '신한카드', category: '학식', memo: '지지고 (고유가)' },
+  { id: 'j-47', type: 'expense', date: '2026-07-25', amount: 5900, payMethod: '신한카드', category: '소영', memo: '카페이얼즈' },
+  { id: 'j-48', type: 'expense', date: '2026-07-27', amount: 180110, payMethod: '신한카드', category: '관리비', memo: '관리비' },
 
   // 동백 카드 내역
   { id: 'j-49', type: 'expense', date: '2026-07-01', amount: 5500, payMethod: '동백', category: '학식', memo: '학식' },
@@ -411,7 +411,7 @@ const INITIAL_SAMPLE_DATA = [
   { id: 'j-73', type: 'expense', date: '2026-07-24', amount: 5400, payMethod: '오동백', category: '상헌용돈', memo: '텐퍼센트' },
 
   // 적금
-  { id: 'j-74', type: 'expense', date: '2026-07-06', amount: 700000, payMethod: '통장입금', category: '청년', memo: '청년 적금' },
+  { id: 'j-74', type: 'expense', date: '2026-07-06', amount: 700000, payMethod: '통장입금', category: '청년', memo: '청년' },
 
   // 오국민(쿠팡) 내역
   { id: 'j-75', type: 'expense', date: '2026-07-03', amount: 5900, payMethod: '오국민(쿠팡)', category: '생활비', memo: '실내슬리퍼' },
@@ -432,7 +432,7 @@ const INITIAL_SAMPLE_DATA = [
   { id: 'j-90', type: 'expense', date: '2026-07-30', amount: 5900, payMethod: '오국민(쿠팡)', category: '생활비', memo: '내성발톱방지' },
   { id: 'j-91', type: 'expense', date: '2026-07-30', amount: 7260, payMethod: '오국민(쿠팡)', category: '생활비', memo: '내성발톱방지' },
 
-  // 현대카드 고정비 및 결제 내역
+  // 현대카드 내역
   { id: 'j-92', type: 'expense', date: '2026-07-09', amount: 29700, payMethod: '현대카드', category: '구독인터넷', memo: '구독인터넷' },
   { id: 'j-93', type: 'expense', date: '2026-07-09', amount: 1900, payMethod: '현대카드', category: '구독인터넷', memo: '카카오' },
   { id: 'j-94', type: 'expense', date: '2026-07-09', amount: 48740, payMethod: '현대카드', category: '통신비', memo: '통신비' },
@@ -483,17 +483,35 @@ function initFirebaseSync() {
   roomRef.on('value', (snapshot) => {
     const val = snapshot.val();
     if (val && val.transactions && val.transactions.length > 0) {
-      // Merge master items (4~7월) if missing from Firebase
-      const existingIds = new Set(val.transactions.map(t => t.id));
-      const missingMasterItems = INITIAL_SAMPLE_DATA.filter(t => !existingIds.has(t.id));
+      // Overwrite/merge master items (4~7월) so latest payMethods apply
+      const masterMap = new Map(INITIAL_SAMPLE_DATA.map(item => [item.id, item]));
       
-      if (missingMasterItems.length > 0) {
-        state.transactions = [...val.transactions, ...missingMasterItems];
+      let hasChanges = false;
+      const updatedTxs = val.transactions.map(item => {
+        if (masterMap.has(item.id)) {
+          const master = masterMap.get(item.id);
+          if (master.payMethod !== item.payMethod || master.memo !== item.memo || master.amount !== item.amount) {
+            hasChanges = true;
+            return { ...item, ...master };
+          }
+        }
+        return item;
+      });
+
+      // Also add missing master items
+      const existingIds = new Set(updatedTxs.map(t => t.id));
+      INITIAL_SAMPLE_DATA.forEach(masterItem => {
+        if (!existingIds.has(masterItem.id)) {
+          updatedTxs.push(masterItem);
+          hasChanges = true;
+        }
+      });
+
+      state.transactions = updatedTxs;
+      if (hasChanges) {
         pushDataToFirebase();
-      } else {
-        state.transactions = val.transactions;
       }
-      
+
       if (val.budgets) state.budgets = val.budgets;
       if (val.payMethods) state.payMethods = val.payMethods;
       if (val.categories) state.categories = val.categories;
