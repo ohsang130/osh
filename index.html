@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>💰 부부 공동 가계부</title>
+  <link rel="stylesheet" href="styles.css">
+  <!-- Chart.js for visualization -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header Controls -->
+    <header class="top-header">
+      <div class="logo-area">
+        <span class="logo-icon">💰</span>
+        <h1 class="logo-title">가계부</h1>
+      </div>
+      <div class="header-actions">
+        <button id="themeToggleBtn" class="hdr-btn secondary" title="다크/라이트 모드">🌙</button>
+        <button id="googleSyncBtn" class="hdr-btn sync-btn">🟢 구글 시트 연동</button>
+        <button id="backupBtn" class="hdr-btn action-btn">📥 백업 (저장)</button>
+        <button id="restoreBtn" class="hdr-btn action-btn">📤 복원 (불러오기)</button>
+        <button id="excelExportBtn" class="hdr-btn action-btn excel">📊 엑셀 다운로드</button>
+      </div>
+    </header>
+
+    <!-- Month Navigation Header -->
+    <section class="month-selector-bar card">
+      <button id="prevMonthBtn" class="nav-arrow-btn">◀</button>
+      <div class="current-month-display">
+        <span id="displayYear">2026년</span>
+        <h2 id="displayMonth">8월</h2>
+      </div>
+      <button id="nextMonthBtn" class="nav-arrow-btn">▶</button>
+    </section>
+
+    <!-- Top Summary 4 Cards -->
+    <section class="summary-cards-grid">
+      <!-- Card 1: Total Income -->
+      <div class="summary-card income-card">
+        <div class="card-icon-box income">💵</div>
+        <div class="card-info">
+          <span class="card-label">총 수입</span>
+          <div class="card-value income-text" id="summaryTotalIncome">0 원</div>
+        </div>
+      </div>
+
+      <!-- Card 2: Total Expense -->
+      <div class="summary-card expense-card">
+        <div class="card-icon-box expense">📉</div>
+        <div class="card-info">
+          <span class="card-label">총 지출</span>
+          <div class="card-value expense-text" id="summaryTotalExpense">0 원</div>
+        </div>
+      </div>
+
+      <!-- Card 3: Target Budget -->
+      <div class="summary-card budget-card">
+        <div class="card-icon-box budget">🎯</div>
+        <div class="card-info">
+          <span class="card-label">목표 예산 합계</span>
+          <div class="card-value budget-text" id="summaryTargetBudget">0 원</div>
+          <span class="card-subtext" id="summaryBudgetProgress">지출 소진율 0%</span>
+        </div>
+      </div>
+
+      <!-- Card 4: Monthly Balance -->
+      <div class="summary-card balance-card">
+        <div class="card-icon-box balance">📊</div>
+        <div class="card-info">
+          <span class="card-label">이번 달 잔액</span>
+          <div class="card-value balance-text" id="summaryBalance">0 원</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Content Layout (Left Form + Right Content Tabs) -->
+    <main class="main-layout">
+      <!-- LEFT: Quick Input Form Panel -->
+      <aside class="left-panel card">
+        <div class="panel-header">
+          <h3>⚡ 빠른 입력</h3>
+          <p>지출/수입 내역을 쉽게 기록하세요</p>
+        </div>
+
+        <!-- Type Selector (Tab Buttons) -->
+        <div class="type-toggle-container">
+          <button id="typeExpenseBtn" class="type-btn expense active">💸 지출</button>
+          <button id="typeIncomeBtn" class="type-btn income">💰 수입</button>
+        </div>
+
+        <form id="transactionForm" onsubmit="return false;">
+          <!-- Date Field -->
+          <div class="form-group">
+            <label for="txDate">날짜</label>
+            <input type="date" id="txDate" required>
+          </div>
+
+          <!-- Amount Field + Quick Buttons -->
+          <div class="form-group">
+            <label for="txAmount">금액 (원)</label>
+            <div class="amount-input-wrapper">
+              <input type="number" id="txAmount" placeholder="0" min="0" required>
+              <span class="currency-unit">원</span>
+            </div>
+            <div class="quick-amount-buttons">
+              <button type="button" class="quick-amt-btn" data-add="10000">+1만</button>
+              <button type="button" class="quick-amt-btn" data-add="50000">+5만</button>
+              <button type="button" class="quick-amt-btn" data-add="100000">+10만</button>
+              <button type="button" class="quick-amt-btn" data-add="500000">+50만</button>
+            </div>
+          </div>
+
+          <!-- Payment Method Tags -->
+          <div class="form-group">
+            <div class="section-label-with-action">
+              <label>결제 수단</label>
+              <button type="button" id="managePayMethodsBtn" class="text-link-btn">⚙️ 결제수단 관리</button>
+            </div>
+            <div class="chip-group" id="payMethodChips">
+              <!-- Dynamically populated payment chips -->
+            </div>
+          </div>
+
+          <!-- Category Tags -->
+          <div class="form-group">
+            <div class="section-label-with-action">
+              <label>카테고리</label>
+              <button type="button" id="manageCategoriesBtn" class="text-link-btn">⚙️ 카테고리 관리/추가</button>
+            </div>
+            <div class="chip-group category-chips" id="categoryChips">
+              <!-- Dynamically populated category chips -->
+            </div>
+          </div>
+
+          <!-- Memo Field -->
+          <div class="form-group">
+            <label for="txMemo">사용 내역 / 메모</label>
+            <input type="text" id="txMemo" placeholder="예: 식당 점심, 인터넷 요금">
+          </div>
+
+          <!-- Submit Button -->
+          <button type="submit" id="addTxSubmitBtn" class="submit-btn">+ 내역 추가하기</button>
+        </form>
+      </aside>
+
+      <!-- RIGHT: View Tabs Panel -->
+      <section class="right-panel card">
+        <!-- Main Navigation Tabs -->
+        <nav class="view-tabs">
+          <button class="view-tab-btn active" data-tab="listTab">📋 거래 내역</button>
+          <button class="view-tab-btn" data-tab="calendarTab">📅 지출 달력</button>
+          <button class="view-tab-btn" data-tab="budgetTab">🎯 카테고리별 목표/예산</button>
+          <button class="view-tab-btn" data-tab="chartTab">📊 지출 분석 차트</button>
+        </nav>
+
+        <!-- TAB 1: Transaction List -->
+        <div class="tab-content active" id="listTab">
+          <!-- Summary of Payment Methods Expenditure -->
+          <div class="pay-summary-bar" id="paySummaryBar">
+            <div class="pay-summary-title">💳 결제수단별 이번 달 지출 금액 (클릭 시 해당 결제수단 내역만 보기)</div>
+            <div class="pay-summary-chips" id="paySummaryChips">
+              <!-- Populated by JS -->
+            </div>
+            <button id="resetPayFilterBtn" class="reset-filter-btn">전체 보기 🔄</button>
+          </div>
+
+          <!-- Search & Filter Controls -->
+          <div class="filter-controls-row">
+            <div class="search-input-wrapper">
+              <span class="search-icon">🔍</span>
+              <input type="text" id="searchInput" placeholder="내역 검색..">
+            </div>
+            <select id="filterPayMethod" class="filter-select">
+              <option value="ALL">전체 결제수단</option>
+            </select>
+            <select id="filterCategory" class="filter-select">
+              <option value="ALL">전체 카테고리</option>
+            </select>
+          </div>
+
+          <!-- List Grouped by Date -->
+          <div class="transaction-list-container" id="txListContainer">
+            <!-- Dynamically populated transaction cards -->
+          </div>
+        </div>
+
+        <!-- TAB 2: Calendar View -->
+        <div class="tab-content" id="calendarTab">
+          <div class="calendar-header-info">
+            <div class="cal-legend">
+              <span class="legend-item income">● 수입</span>
+              <span class="legend-item expense">● 지출</span>
+            </div>
+          </div>
+          <div class="calendar-grid" id="calendarGrid">
+            <!-- Dynamically built calendar -->
+          </div>
+        </div>
+
+        <!-- TAB 3: Category Budget Setup & Progress -->
+        <div class="tab-content" id="budgetTab">
+          <div class="tab-header-actions">
+            <h3>🎯 월간 카테고리별 예산 관리</h3>
+            <button id="saveBudgetsBtn" class="action-btn-sm">💾 예산 변경사항 저장</button>
+          </div>
+          <div class="budget-list" id="budgetList">
+            <!-- Dynamically built budget items -->
+          </div>
+        </div>
+
+        <!-- TAB 4: Analysis & Charts -->
+        <div class="tab-content" id="chartTab">
+          <div class="charts-grid">
+            <div class="chart-card">
+              <h4>🍕 카테고리별 지출 비율</h4>
+              <div class="chart-wrapper">
+                <canvas id="categoryChart"></canvas>
+              </div>
+            </div>
+            <div class="chart-card">
+              <h4>💳 결제수단별 지출 비율</h4>
+              <div class="chart-wrapper">
+                <canvas id="payMethodChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </section>
+    </main>
+  </div>
+
+  <!-- Modal for Google Sheets Sync Setup -->
+  <div id="googleSyncModal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>🟢 구글 스프레드시트 실시간 연동 설정</h3>
+        <button class="modal-close-btn" id="closeSyncModalBtn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="guide-text">
+          부부가 동일한 구글 시트를 연동하면, 어디서든 실시간으로 지출/수입 내역을 함께 기록하고 공유할 수 있습니다!
+        </p>
+        <div class="form-group">
+          <label for="appsScriptUrlInput">Google Apps Script Web App URL</label>
+          <input type="text" id="appsScriptUrlInput" placeholder="https://script.google.com/macros/s/.../exec">
+        </div>
+        <div class="sync-status-box" id="syncStatusBox">
+          연동 상태: <span id="syncStatusText" class="badge warning">미연동 (로컬 저장소 사용 중)</span>
+        </div>
+        <details class="setup-instructions" open>
+          <summary>🔍 구글 앱스 스크립트(Google Apps Script) 생성 3단계 가이드</summary>
+          <ol>
+            <li><a href="https://sheets.google.com" target="_blank" rel="noopener">구글 스프레드시트</a>에서 새 시트를 생성합니다.</li>
+            <li>상단 메뉴 [확장 프로그램] ➔ [Apps Script]를 클릭합니다.</li>
+            <li>기존 코드를 지우고 아래 제공된 스크립트 코드를 붙여넣은 후 저장(Ctrl+S)합니다.</li>
+            <li>[배포] ➔ [새 배포] ➔ 톱니바퀴[유형 선택] ➔ [웹 앱] 선택 후 <b>액세스 권한 있는 사용자: '모든 사용자(Anyone)'</b>로 배포합니다.</li>
+            <li>생성된 웹 앱 URL(Web App URL)을 위 입력란에 복사하여 붙여넣고 [연동 테스트 및 저장]을 누릅니다.</li>
+          </ol>
+          <textarea id="appsScriptCodeSample" readonly class="code-sample-box"></textarea>
+          <button id="copyScriptCodeBtn" class="action-btn-sm">📋 스크립트 코드 복사</button>
+        </details>
+      </div>
+      <div class="modal-footer">
+        <button id="testAndSaveSyncBtn" class="submit-btn">연동 테스트 및 저장</button>
+        <button id="syncNowBtn" class="hdr-btn action-btn">🔄 구글시트에서 데이터 동기화</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal for Managing Payment Methods & Categories -->
+  <div id="manageTagsModal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="manageModalTitle">관리</h3>
+        <button class="modal-close-btn" id="closeTagModalBtn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="add-tag-row">
+          <input type="text" id="newTagNameInput" placeholder="새 항목 이름 입력...">
+          <button id="addNewTagBtn" class="action-btn-sm">+ 추가</button>
+        </div>
+        <ul id="tagListItems" class="tag-manage-list">
+          <!-- Tag list items with delete buttons -->
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <input type="file" id="restoreFileInput" accept=".json" style="display: none;">
+
+  <script src="app.js"></script>
+</body>
+</html>
