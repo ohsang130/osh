@@ -1200,9 +1200,9 @@ function exportToCSV() {
   csvContent += `==============================================\n`;
   csvContent += `💰 부부 공동가계부 - ${state.currentYear}년 ${state.currentMonth}월 월간 리포트\n`;
   csvContent += `==============================================\n`;
-  csvContent += `총 수입,${totalIncome.toLocaleString()} 원\n`;
-  csvContent += `총 지출,${totalExpense.toLocaleString()} 원\n`;
-  csvContent += `이번 달 잔액,${balance.toLocaleString()} 원\n`;
+  csvContent += `총 수입,"${totalIncome.toLocaleString()} 원"\n`;
+  csvContent += `총 지출,"${totalExpense.toLocaleString()} 원"\n`;
+  csvContent += `이번 달 잔액,"${balance.toLocaleString()} 원"\n`;
   csvContent += `==============================================\n\n`;
 
   // Main Data Table Header
