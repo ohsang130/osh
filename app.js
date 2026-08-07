@@ -736,6 +736,24 @@ function getCurrentMonthTransactions() {
   });
 }
 
+function getMonthBudgets(year, month) {
+  const monthKey = `${year}-${String(month).padStart(2, '0')}`;
+  if (!state.budgets) state.budgets = {};
+  
+  // If state.budgets is structured per month { '2026-08': { '식비': 300000 }, ... }
+  if (state.budgets[monthKey]) {
+    return state.budgets[monthKey];
+  }
+  
+  // Backward compatibility: If state.budgets was flat object { '식비': 300000 }, fallback
+  const isFlat = Object.keys(state.budgets).some(k => !k.includes('-'));
+  if (isFlat) {
+    return state.budgets;
+  }
+
+  return {};
+}
+
 function renderSummaryCards() {
   const monthTxs = getCurrentMonthTransactions();
   
@@ -748,8 +766,9 @@ function renderSummaryCards() {
     else totalExpense += amt;
   });
 
+  const currentMonthBudget = getMonthBudgets(state.currentYear, state.currentMonth);
   let totalBudget = 0;
-  Object.values(state.budgets).forEach(b => totalBudget += Number(b) || 0);
+  Object.values(currentMonthBudget).forEach(b => totalBudget += Number(b) || 0);
 
   const balance = totalIncome - totalExpense;
   const progressPct = totalBudget > 0 ? Math.round((totalExpense / totalBudget) * 100) : 0;
@@ -759,6 +778,70 @@ function renderSummaryCards() {
   document.getElementById('summaryTargetBudget').textContent = `${totalBudget.toLocaleString()} 원`;
   document.getElementById('summaryBudgetProgress').textContent = `지출 소진율 ${progressPct}%`;
   document.getElementById('summaryBalance').textContent = `${balance.toLocaleString()} 원`;
+}
+
+function renderBudgets() {
+  const container = document.getElementById('budgetList');
+  container.innerHTML = '';
+
+  const monthTxs = getCurrentMonthTransactions().filter(t => t.type === 'expense');
+  const currentMonthBudget = getMonthBudgets(state.currentYear, state.currentMonth);
+
+  state.categories.forEach(cat => {
+    const targetBudget = Number(currentMonthBudget[cat]) || 0;
+    const actualExpense = monthTxs.filter(t => t.category === cat).reduce((sum, t) => sum + Number(t.amount), 0);
+    const remaining = targetBudget - actualExpense;
+    const pct = targetBudget > 0 ? Math.min(Math.round((actualExpense / targetBudget) * 100), 100) : 0;
+    const isOver = actualExpense > targetBudget && targetBudget > 0;
+
+    const item = document.createElement('div');
+    item.className = 'budget-item';
+    item.innerHTML = `
+      <div class="budget-item-top">
+        <div class="budget-cat-title">
+          ${getCategoryEmoji(cat)} ${cat}
+          ${targetBudget > 0 ? (
+            isOver 
+              ? `<span class="badge" style="background:#fef2f2; color:#ef4444; margin-left:8px; font-weight:700;">⚠️ ${Math.abs(remaining).toLocaleString()}원 초과</span>`
+              : `<span class="badge" style="background:#ecfdf5; color:#10b981; margin-left:8px; font-weight:700;">💵 남은 예산: ${remaining.toLocaleString()}원</span>`
+          ) : ''}
+        </div>
+        <div class="budget-inputs">
+          <span style="font-size:12px; color:var(--text-secondary);">지출: <b>${actualExpense.toLocaleString()} 원</b> /</span>
+          <label style="font-size:12px;">목표 예산:</label>
+          <input type="number" class="budget-input-field" data-cat="${cat}" value="${targetBudget}" placeholder="0"> 원
+        </div>
+      </div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill ${isOver ? 'over' : ''}" style="width: ${pct}%;"></div>
+      </div>
+    `;
+    container.appendChild(item);
+  });
+}
+
+function saveBudgets() {
+  const monthKey = `${state.currentYear}-${String(state.currentMonth).padStart(2, '0')}`;
+  
+  // If state.budgets was flat format, initialize nested structure
+  const isFlat = Object.keys(state.budgets || {}).some(k => !k.includes('-'));
+  if (isFlat || typeof state.budgets !== 'object') {
+    state.budgets = {};
+  }
+
+  if (!state.budgets[monthKey]) {
+    state.budgets[monthKey] = {};
+  }
+
+  document.querySelectorAll('.budget-input-field').forEach(inp => {
+    const cat = inp.dataset.cat;
+    const val = parseInt(inp.value, 10) || 0;
+    state.budgets[monthKey][cat] = val;
+  });
+
+  pushDataToFirebase();
+  alert(`${state.currentYear}년 ${state.currentMonth}월 카테고리별 목표 예산이 저장되었습니다!`);
+  renderSummaryCards();
 }
 
 function renderTransactionList() {
@@ -1001,55 +1084,7 @@ function renderCalendar() {
   }
 }
 
-function renderBudgets() {
-  const container = document.getElementById('budgetList');
-  container.innerHTML = '';
 
-  const monthTxs = getCurrentMonthTransactions().filter(t => t.type === 'expense');
-
-  state.categories.forEach(cat => {
-    const targetBudget = Number(state.budgets[cat]) || 0;
-    const actualExpense = monthTxs.filter(t => t.category === cat).reduce((sum, t) => sum + Number(t.amount), 0);
-    const remaining = targetBudget - actualExpense;
-    const pct = targetBudget > 0 ? Math.min(Math.round((actualExpense / targetBudget) * 100), 100) : 0;
-    const isOver = actualExpense > targetBudget && targetBudget > 0;
-
-    const item = document.createElement('div');
-    item.className = 'budget-item';
-    item.innerHTML = `
-      <div class="budget-item-top">
-        <div class="budget-cat-title">
-          ${getCategoryEmoji(cat)} ${cat}
-          ${targetBudget > 0 ? (
-            isOver 
-              ? `<span class="badge" style="background:#fef2f2; color:#ef4444; margin-left:8px; font-weight:700;">⚠️ ${Math.abs(remaining).toLocaleString()}원 초과</span>`
-              : `<span class="badge" style="background:#ecfdf5; color:#10b981; margin-left:8px; font-weight:700;">💵 남은 예산: ${remaining.toLocaleString()}원</span>`
-          ) : ''}
-        </div>
-        <div class="budget-inputs">
-          <span style="font-size:12px; color:var(--text-secondary);">지출: <b>${actualExpense.toLocaleString()} 원</b> /</span>
-          <label style="font-size:12px;">목표 예산:</label>
-          <input type="number" class="budget-input-field" data-cat="${cat}" value="${targetBudget}" placeholder="0"> 원
-        </div>
-      </div>
-      <div class="progress-bar-bg">
-        <div class="progress-bar-fill ${isOver ? 'over' : ''}" style="width: ${pct}%;"></div>
-      </div>
-    `;
-    container.appendChild(item);
-  });
-}
-
-function saveBudgets() {
-  document.querySelectorAll('.budget-input-field').forEach(inp => {
-    const cat = inp.dataset.cat;
-    const val = parseInt(inp.value, 10) || 0;
-    state.budgets[cat] = val;
-  });
-  pushDataToFirebase();
-  alert('카테고리별 목표 예산이 저장되었습니다!');
-  renderSummaryCards();
-}
 
 function initCharts() {
   const catCtx = document.getElementById('categoryChart').getContext('2d');
