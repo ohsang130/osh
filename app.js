@@ -43,13 +43,14 @@ const state = {
   ],
   
   budgets: {
-    '식비': 500000,
-    '생활비': 300000,
-    '관리비': 150000,
-    '외식': 200000,
-    '교통비': 100000,
+    '식비': 300000,
+    '생활비': 200000,
+    '관리비': 240000,
+    '가스비': 10000,
+    '유류비': 70000,
     '통신비': 80000
   },
+  memos: {},
 
   transactions: []
 };
@@ -515,6 +516,7 @@ function initFirebaseSync() {
       if (val.budgets) state.budgets = val.budgets;
       if (val.payMethods) state.payMethods = val.payMethods;
       if (val.categories) state.categories = val.categories;
+      if (val.memos) state.memos = val.memos;
     } else {
       state.transactions = INITIAL_SAMPLE_DATA;
       pushDataToFirebase();
@@ -530,6 +532,7 @@ function pushDataToFirebase() {
       budgets: state.budgets,
       payMethods: state.payMethods,
       categories: state.categories,
+      memos: state.memos,
       lastUpdated: Date.now()
     });
   }
@@ -637,6 +640,7 @@ function setupEventListeners() {
       if (tabId === 'calendarTab') renderCalendar();
       if (tabId === 'budgetTab') renderBudgets();
       if (tabId === 'chartTab') updateCharts();
+      if (tabId === 'memoTab') renderMonthlyMemo();
     });
   });
 
@@ -657,8 +661,9 @@ function setupEventListeners() {
   document.getElementById('manageCategoriesBtn').addEventListener('click', () => openManageModal('categories'));
   document.getElementById('closeTagModalBtn').addEventListener('click', () => document.getElementById('manageTagsModal').classList.add('hidden'));
 
-  // Save Budgets
+  // Save Budgets & Monthly Memo
   document.getElementById('saveBudgetsBtn').addEventListener('click', saveBudgets);
+  document.getElementById('saveMonthlyMemoBtn').addEventListener('click', saveMonthlyMemo);
 }
 
 // Master Render Function
@@ -671,6 +676,28 @@ function renderApp() {
   renderFilterOptions();
   renderSummaryCards();
   renderTransactionList();
+  renderMonthlyMemo();
+}
+
+function renderMonthlyMemo() {
+  const monthKey = `${state.currentYear}-${String(state.currentMonth).padStart(2, '0')}`;
+  const titleElem = document.getElementById('memoTabMonthTitle');
+  if (titleElem) titleElem.textContent = `${state.currentMonth}월`;
+
+  const memoTextarea = document.getElementById('monthlyMemoTextarea');
+  if (memoTextarea) {
+    memoTextarea.value = (state.memos && state.memos[monthKey]) || '';
+  }
+}
+
+function saveMonthlyMemo() {
+  const monthKey = `${state.currentYear}-${String(state.currentMonth).padStart(2, '0')}`;
+  const memoTextarea = document.getElementById('monthlyMemoTextarea');
+  if (!state.memos) state.memos = {};
+  
+  state.memos[monthKey] = memoTextarea.value;
+  pushDataToFirebase();
+  alert(`${state.currentYear}년 ${state.currentMonth}월 메모가 저장되었습니다!`);
 }
 
 function renderPayMethodChips() {

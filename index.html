@@ -157,6 +157,7 @@
           <button class="view-tab-btn" data-tab="calendarTab">📅 지출 달력</button>
           <button class="view-tab-btn" data-tab="budgetTab">🎯 카테고리별 목표/예산</button>
           <button class="view-tab-btn" data-tab="chartTab">📊 지출 분석 차트</button>
+          <button class="view-tab-btn" data-tab="memoTab">📝 월간 메모장</button>
         </nav>
 
         <!-- TAB 1: Transaction List -->
@@ -229,6 +230,22 @@
                 <canvas id="payMethodChart"></canvas>
               </div>
             </div>
+          </div>
+        </div>
+
+        <!-- TAB 5: Monthly Notes / Notepad -->
+        <div class="tab-content" id="memoTab">
+          <div class="tab-header-actions">
+            <div>
+              <h3>📝 <span id="memoTabMonthTitle">8월</span> 부부 월간 메모장</h3>
+              <p style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">
+                이달의 경조사, 특수 지출 계획, 절약 다짐 등 자유롭게 기록해 보세요. 부부간 실시간 공유됩니다!
+              </p>
+            </div>
+            <button id="saveMonthlyMemoBtn" class="action-btn-sm">💾 메모 저장</button>
+          </div>
+          <div class="memo-container" style="margin-top: 16px;">
+            <textarea id="monthlyMemoTextarea" class="memo-textarea" placeholder="예: &#10;- 8월 15일 삼촌 결혼식 축의금 10만원 예정&#10;- 이번 달 외식은 주 1회 이하로 절약해 보기!&#10;- 에어컨 청소비 지출 확인하기"></textarea>
           </div>
         </div>
 
