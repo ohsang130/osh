@@ -676,6 +676,7 @@ function renderApp() {
   renderFilterOptions();
   renderSummaryCards();
   renderTransactionList();
+  renderBudgets();
   renderMonthlyMemo();
 }
 
