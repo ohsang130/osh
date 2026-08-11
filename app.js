@@ -469,7 +469,7 @@ function checkSecretAuthGate() {
   }
 }
 
-function verifySecretPass() {
+window.verifySecretPass = function() {
   const passElem = document.getElementById('secretPassInput');
   const inputPass = passElem ? passElem.value.trim() : '';
   const errorMsg = document.getElementById('secretAuthError');
@@ -487,7 +487,7 @@ function verifySecretPass() {
       passElem.focus();
     }
   }
-}
+};
 
 function loadStoredData() {
   // Always enforce the shared room code 'myhouse-main-room'

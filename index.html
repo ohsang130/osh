@@ -331,12 +331,45 @@
       <h2>부부 전용 가계부 인증</h2>
       <p>부부만 접근 가능합니다. 비밀 암호를 입력해 인증하세요.</p>
       <div class="pin-input-group">
-        <input type="password" id="secretPassInput" maxlength="10" placeholder="••••" autofocus>
+        <input type="password" id="secretPassInput" maxlength="10" placeholder="••••" autofocus onkeydown="if(event.key==='Enter') verifySecretPass();">
       </div>
-      <button id="secretAuthBtn" class="submit-btn" style="margin-top:16px;">부부 인증 후 입장 🔑</button>
+      <button id="secretAuthBtn" type="button" class="submit-btn" style="margin-top:16px;" onclick="verifySecretPass();">부부 인증 후 입장 🔑</button>
       <p id="secretAuthError" class="lock-error-msg hidden">비밀 암호가 일치하지 않습니다!</p>
     </div>
   </div>
+
+  <script>
+    function verifySecretPass() {
+      var passElem = document.getElementById('secretPassInput');
+      var val = passElem ? passElem.value.trim() : '';
+      var err = document.getElementById('secretAuthError');
+      var overlay = document.getElementById('secretAuthOverlay');
+      
+      // Unconditional check for 1130 or 0000 directly inside HTML
+      if (val === '1130' || val === '0000') {
+        localStorage.setItem('couple_secret_authed', 'true');
+        if (overlay) overlay.style.display = 'none';
+        if (err) err.style.display = 'none';
+      } else {
+        if (err) {
+          err.style.display = 'block';
+          err.classList.remove('hidden');
+        }
+        if (passElem) {
+          passElem.value = '';
+          passElem.focus();
+        }
+      }
+    }
+    
+    // Auto unlock if previously authenticated
+    if (localStorage.getItem('couple_secret_authed') === 'true') {
+      document.addEventListener('DOMContentLoaded', function() {
+        var overlay = document.getElementById('secretAuthOverlay');
+        if (overlay) overlay.style.display = 'none';
+      });
+    }
+  </script>
 
   <input type="file" id="restoreFileInput" accept=".json" style="display: none;">
 
