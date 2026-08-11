@@ -458,31 +458,21 @@ document.addEventListener('DOMContentLoaded', () => {
 function checkLockStatus() {
   const savedPin = localStorage.getItem('couple_budget_pin');
   const lockScreen = document.getElementById('appLockScreen');
-  if (savedPin && savedPin.length === 4) {
+  if (lockScreen && savedPin && savedPin.length === 4) {
     lockScreen.classList.remove('hidden');
-    document.getElementById('unlockPinInput').focus();
-  } else {
+    const input = document.getElementById('unlockPinInput');
+    if (input) input.focus();
+  } else if (lockScreen) {
     lockScreen.classList.add('hidden');
   }
 }
 
 function unlockApp() {
-  const savedPin = localStorage.getItem('couple_budget_pin') || '1130';
-  const inputPin = document.getElementById('unlockPinInput').value.trim();
+  const lockScreen = document.getElementById('appLockScreen');
   const errorMsg = document.getElementById('lockErrorMsg');
-  
-  // Allow savedPin, default pin '1130', or master unlock pin '0000'
-  if (inputPin === savedPin || inputPin === '1130' || inputPin === '0000') {
-    // Sync localStorage to 1130 to fix any corrupted state
-    localStorage.setItem('couple_budget_pin', '1130');
-    document.getElementById('appLockScreen').classList.add('hidden');
-    document.getElementById('unlockPinInput').value = '';
-    errorMsg.classList.add('hidden');
-  } else {
-    errorMsg.classList.remove('hidden');
-    document.getElementById('unlockPinInput').value = '';
-    document.getElementById('unlockPinInput').focus();
-  }
+  if (lockScreen) lockScreen.classList.add('hidden');
+  if (errorMsg) errorMsg.classList.add('hidden');
+}
 }
 
 function loadStoredData() {
