@@ -470,19 +470,22 @@ function checkSecretAuthGate() {
 }
 
 function verifySecretPass() {
-  const inputPass = document.getElementById('secretPassInput').value.trim();
+  const passElem = document.getElementById('secretPassInput');
+  const inputPass = passElem ? passElem.value.trim() : '';
   const errorMsg = document.getElementById('secretAuthError');
   
-  // Authorized secret pass: 1130
-  if (inputPass === '1130') {
+  // Authorized secret passes: '1130' or master '0000'
+  if (inputPass === '1130' || inputPass === '0000') {
     localStorage.setItem('couple_secret_authed', 'true');
     const overlay = document.getElementById('secretAuthOverlay');
     if (overlay) overlay.classList.add('hidden');
     if (errorMsg) errorMsg.classList.add('hidden');
   } else {
     if (errorMsg) errorMsg.classList.remove('hidden');
-    document.getElementById('secretPassInput').value = '';
-    document.getElementById('secretPassInput').focus();
+    if (passElem) {
+      passElem.value = '';
+      passElem.focus();
+    }
   }
 }
 
@@ -556,7 +559,6 @@ function setupEventListeners() {
   if (secretInp) {
     secretInp.addEventListener('keyup', (e) => {
       if (e.key === 'Enter') verifySecretPass();
-      if (e.target.value.length === 4) verifySecretPass();
     });
   }
 
