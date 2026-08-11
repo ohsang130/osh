@@ -456,7 +456,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function checkLockStatus() {
-  const savedPin = localStorage.getItem('couple_budget_pin');
+  const savedPin = localStorage.getItem('couple_budget_pin') || '1130';
   const lockScreen = document.getElementById('appLockScreen');
   if (savedPin && savedPin.length === 4) {
     lockScreen.classList.remove('hidden');
@@ -467,7 +467,7 @@ function checkLockStatus() {
 }
 
 function unlockApp() {
-  const savedPin = localStorage.getItem('couple_budget_pin');
+  const savedPin = localStorage.getItem('couple_budget_pin') || '1130';
   const inputPin = document.getElementById('unlockPinInput').value;
   const errorMsg = document.getElementById('lockErrorMsg');
   
@@ -548,7 +548,7 @@ function setupEventListeners() {
   // Lock Screen Events
   document.getElementById('lockSetupBtn').addEventListener('click', () => {
     document.getElementById('lockSetupModal').classList.remove('hidden');
-    document.getElementById('lockPinInput').value = localStorage.getItem('couple_budget_pin') || '';
+    document.getElementById('lockPinInput').value = localStorage.getItem('couple_budget_pin') || '1130';
   });
 
   document.getElementById('closeLockModalBtn').addEventListener('click', () => {
