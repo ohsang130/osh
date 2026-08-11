@@ -456,7 +456,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function checkLockStatus() {
-  const savedPin = localStorage.getItem('couple_budget_pin') || '1130';
+  const savedPin = localStorage.getItem('couple_budget_pin');
   const lockScreen = document.getElementById('appLockScreen');
   if (savedPin && savedPin.length === 4) {
     lockScreen.classList.remove('hidden');
