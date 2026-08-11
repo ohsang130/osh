@@ -473,7 +473,6 @@ function unlockApp() {
   if (lockScreen) lockScreen.classList.add('hidden');
   if (errorMsg) errorMsg.classList.add('hidden');
 }
-}
 
 function loadStoredData() {
   // Always enforce the shared room code 'myhouse-main-room'
