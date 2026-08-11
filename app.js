@@ -481,36 +481,13 @@ function initFirebaseSync() {
   // Listen to realtime updates on this couple room
   roomRef.on('value', (snapshot) => {
     const val = snapshot.val();
-    if (val && val.transactions && val.transactions.length > 0) {
-      // Overwrite/merge master items (4~7월) so latest payMethods apply
-      const masterMap = new Map(INITIAL_SAMPLE_DATA.map(item => [item.id, item]));
-      
-      let hasChanges = false;
-      const updatedTxs = val.transactions.map(item => {
-        if (masterMap.has(item.id)) {
-          const master = masterMap.get(item.id);
-          if (master.payMethod !== item.payMethod || master.memo !== item.memo || master.amount !== item.amount) {
-            hasChanges = true;
-            return { ...item, ...master };
-          }
-        }
-        return item;
-      });
-
-      // Also add missing master items
-      const existingIds = new Set(updatedTxs.map(t => t.id));
-      INITIAL_SAMPLE_DATA.forEach(masterItem => {
-        if (!existingIds.has(masterItem.id)) {
-          updatedTxs.push(masterItem);
-          hasChanges = true;
-        }
-      });
-
-      state.transactions = updatedTxs;
-      if (hasChanges) {
-        pushDataToFirebase();
+    if (val) {
+      if (val.transactions && Array.isArray(val.transactions)) {
+        state.transactions = val.transactions;
+      } else {
+        state.transactions = INITIAL_SAMPLE_DATA;
       }
-
+      
       if (val.budgets) state.budgets = val.budgets;
       if (val.payMethods) state.payMethods = val.payMethods;
       if (val.categories) state.categories = val.categories;
