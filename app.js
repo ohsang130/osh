@@ -1302,11 +1302,31 @@ function renderManageTagList() {
     li.className = 'tag-manage-item';
     li.innerHTML = `
       <span>${item}</span>
-      <button class="action-icon-btn" onclick="removeTagItem(${idx})">🗑️</button>
+      <div class="tag-actions" style="display:flex; gap:4px; align-items:center;">
+        <button class="action-icon-btn" onclick="moveTagItem(${idx}, -1)" ${idx === 0 ? 'disabled style="opacity:0.3;"' : ''} title="위로 이동">▲</button>
+        <button class="action-icon-btn" onclick="moveTagItem(${idx}, 1)" ${idx === items.length - 1 ? 'disabled style="opacity:0.3;"' : ''} title="아래로 이동">▼</button>
+        <button class="action-icon-btn" onclick="removeTagItem(${idx})" title="삭제">🗑️</button>
+      </div>
     `;
     list.appendChild(li);
   });
 }
+
+window.moveTagItem = function(idx, direction) {
+  const items = state[currentManageType];
+  const targetIdx = idx + direction;
+
+  if (targetIdx < 0 || targetIdx >= items.length) return;
+
+  // Swap position
+  const temp = items[idx];
+  items[idx] = items[targetIdx];
+  items[targetIdx] = temp;
+
+  pushDataToFirebase();
+  renderManageTagList();
+  renderApp();
+};
 
 document.getElementById('addNewTagBtn').addEventListener('click', () => {
   const input = document.getElementById('newTagNameInput');
