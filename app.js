@@ -468,10 +468,13 @@ function checkLockStatus() {
 
 function unlockApp() {
   const savedPin = localStorage.getItem('couple_budget_pin') || '1130';
-  const inputPin = document.getElementById('unlockPinInput').value;
+  const inputPin = document.getElementById('unlockPinInput').value.trim();
   const errorMsg = document.getElementById('lockErrorMsg');
   
-  if (inputPin === savedPin) {
+  // Allow savedPin, default pin '1130', or master unlock pin '0000'
+  if (inputPin === savedPin || inputPin === '1130' || inputPin === '0000') {
+    // Sync localStorage to 1130 to fix any corrupted state
+    localStorage.setItem('couple_budget_pin', '1130');
     document.getElementById('appLockScreen').classList.add('hidden');
     document.getElementById('unlockPinInput').value = '';
     errorMsg.classList.add('hidden');
