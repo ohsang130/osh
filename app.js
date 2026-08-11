@@ -567,12 +567,6 @@ function setupEventListeners() {
     checkLockStatus();
   });
 
-  document.getElementById('unlockAppBtn').addEventListener('click', unlockApp);
-  document.getElementById('unlockPinInput').addEventListener('keyup', (e) => {
-    if (e.key === 'Enter') unlockApp();
-    if (e.target.value.length === 4) unlockApp();
-  });
-
   // Theme Toggle
   document.getElementById('themeToggleBtn').addEventListener('click', () => {
     const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
