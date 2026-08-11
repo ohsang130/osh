@@ -814,7 +814,7 @@ function renderBudgets() {
   const monthTxs = getCurrentMonthTransactions().filter(t => t.type === 'expense');
   const currentMonthBudget = getMonthBudgets(state.currentYear, state.currentMonth);
 
-  state.categories.forEach(cat => {
+  state.categories.forEach((cat, idx) => {
     const targetBudget = Number(currentMonthBudget[cat]) || 0;
     const actualExpense = monthTxs.filter(t => t.category === cat).reduce((sum, t) => sum + Number(t.amount), 0);
     const remaining = targetBudget - actualExpense;
@@ -825,12 +825,16 @@ function renderBudgets() {
     item.className = 'budget-item';
     item.innerHTML = `
       <div class="budget-item-top">
-        <div class="budget-cat-title">
-          ${getCategoryEmoji(cat)} ${cat}
+        <div class="budget-cat-title" style="display:flex; align-items:center; gap:8px;">
+          <div class="reorder-btns" style="display:flex; gap:2px;">
+            <button type="button" class="action-icon-btn" onclick="moveCategoryBudget(${idx}, -1)" ${idx === 0 ? 'disabled style="opacity:0.2;"' : ''} title="위로 이동" style="padding:2px 6px; font-size:11px;">▲</button>
+            <button type="button" class="action-icon-btn" onclick="moveCategoryBudget(${idx}, 1)" ${idx === state.categories.length - 1 ? 'disabled style="opacity:0.2;"' : ''} title="아래로 이동" style="padding:2px 6px; font-size:11px;">▼</button>
+          </div>
+          <span>${getCategoryEmoji(cat)} ${cat}</span>
           ${targetBudget > 0 ? (
             isOver 
-              ? `<span class="badge" style="background:#fef2f2; color:#ef4444; margin-left:8px; font-weight:700;">⚠️ ${Math.abs(remaining).toLocaleString()}원 초과</span>`
-              : `<span class="badge" style="background:#ecfdf5; color:#10b981; margin-left:8px; font-weight:700;">💵 남은 예산: ${remaining.toLocaleString()}원</span>`
+              ? `<span class="badge" style="background:#fef2f2; color:#ef4444; margin-left:4px; font-weight:700;">⚠️ ${Math.abs(remaining).toLocaleString()}원 초과</span>`
+              : `<span class="badge" style="background:#ecfdf5; color:#10b981; margin-left:4px; font-weight:700;">💵 남은 예산: ${remaining.toLocaleString()}원</span>`
           ) : ''}
         </div>
         <div class="budget-inputs">
@@ -846,6 +850,19 @@ function renderBudgets() {
     container.appendChild(item);
   });
 }
+
+window.moveCategoryBudget = function(idx, direction) {
+  const targetIdx = idx + direction;
+  if (targetIdx < 0 || targetIdx >= state.categories.length) return;
+
+  // Swap category position
+  const temp = state.categories[idx];
+  state.categories[idx] = state.categories[targetIdx];
+  state.categories[targetIdx] = temp;
+
+  pushDataToFirebase();
+  renderApp();
+};
 
 function saveBudgets() {
   const monthKey = `${state.currentYear}-${String(state.currentMonth).padStart(2, '0')}`;
