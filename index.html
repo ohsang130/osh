@@ -324,6 +324,20 @@
     </div>
   </div>
 
+  <!-- Secret Password Gate Overlay (Only authorized couple members can pass) -->
+  <div id="secretAuthOverlay" class="lock-screen-overlay">
+    <div class="lock-card">
+      <div class="lock-icon">🔐</div>
+      <h2>부부 전용 가계부 인증</h2>
+      <p>부부만 접근 가능합니다. 비밀 암호를 입력해 인증하세요.</p>
+      <div class="pin-input-group">
+        <input type="password" id="secretPassInput" maxlength="10" placeholder="••••" autofocus>
+      </div>
+      <button id="secretAuthBtn" class="submit-btn" style="margin-top:16px;">부부 인증 후 입장 🔑</button>
+      <p id="secretAuthError" class="lock-error-msg hidden">비밀 암호가 일치하지 않습니다!</p>
+    </div>
+  </div>
+
   <input type="file" id="restoreFileInput" accept=".json" style="display: none;">
 
   <script src="app.js"></script>
