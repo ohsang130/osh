@@ -23,6 +23,7 @@
       <div class="header-actions">
         <button id="themeToggleBtn" class="hdr-btn secondary" title="다크/라이트 모드">🌙</button>
         <button id="coupleRoomBtn" class="hdr-btn sync-btn">💑 부부 공유방 설정</button>
+        <button id="lockSetupBtn" class="hdr-btn secondary" title="비밀번호 잠금 설정">🔒 잠금 설정</button>
         <button id="backupBtn" class="hdr-btn action-btn">📥 백업 (저장)</button>
         <button id="restoreBtn" class="hdr-btn action-btn">📤 복원 (불러오기)</button>
         <button id="excelExportBtn" class="hdr-btn action-btn excel">📊 엑셀 다운로드</button>
@@ -297,6 +298,43 @@
           <!-- Tag list items -->
         </ul>
       </div>
+    </div>
+  </div>
+
+  <!-- Modal for Password Lock Setup -->
+  <div id="lockSetupModal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>🔒 부부 비밀번호 잠금 설정</h3>
+        <button class="modal-close-btn" id="closeLockModalBtn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="guide-text">
+          가계부 접속 시 사용할 <b>4자리 숫자 비밀번호</b>를 설정하세요.<br>부부 두 분만 똑같이 입력해 공유하시면 됩니다!
+        </p>
+        <div class="form-group">
+          <label for="lockPinInput">4자리 비밀번호 (숫자)</label>
+          <input type="password" id="lockPinInput" maxlength="4" placeholder="예: 1234" style="letter-spacing:8px; font-size:18px; text-align:center;">
+        </div>
+      </div>
+      <div class="modal-footer" style="display:flex; gap:8px;">
+        <button id="saveLockPinBtn" class="submit-btn" style="flex:2;">🔒 비밀번호 저장 및 잠금 켜기</button>
+        <button id="disableLockPinBtn" class="submit-btn" style="flex:1; background:#ef4444;">🔓 잠금 해제(OFF)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fullscreen App Lock Screen Overlay -->
+  <div id="appLockScreen" class="lock-screen-overlay hidden">
+    <div class="lock-card">
+      <div class="lock-icon">🔐</div>
+      <h2>부부 가계부 잠금</h2>
+      <p>가계부에 접근하려면 비밀번호 4자리를 입력하세요</p>
+      <div class="pin-input-group">
+        <input type="password" id="unlockPinInput" maxlength="4" placeholder="••••" autofocus>
+      </div>
+      <button id="unlockAppBtn" class="submit-btn" style="margin-top:16px;">가계부 열기 🔓</button>
+      <p id="lockErrorMsg" class="lock-error-msg hidden">비밀번호가 일치하지 않습니다!</p>
     </div>
   </div>
 

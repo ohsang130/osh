@@ -452,7 +452,35 @@ document.addEventListener('DOMContentLoaded', () => {
   initFirebaseSync();
   renderApp();
   initCharts();
+  checkLockStatus();
 });
+
+function checkLockStatus() {
+  const savedPin = localStorage.getItem('couple_budget_pin');
+  const lockScreen = document.getElementById('appLockScreen');
+  if (savedPin && savedPin.length === 4) {
+    lockScreen.classList.remove('hidden');
+    document.getElementById('unlockPinInput').focus();
+  } else {
+    lockScreen.classList.add('hidden');
+  }
+}
+
+function unlockApp() {
+  const savedPin = localStorage.getItem('couple_budget_pin');
+  const inputPin = document.getElementById('unlockPinInput').value;
+  const errorMsg = document.getElementById('lockErrorMsg');
+  
+  if (inputPin === savedPin) {
+    document.getElementById('appLockScreen').classList.add('hidden');
+    document.getElementById('unlockPinInput').value = '';
+    errorMsg.classList.add('hidden');
+  } else {
+    errorMsg.classList.remove('hidden');
+    document.getElementById('unlockPinInput').value = '';
+    document.getElementById('unlockPinInput').focus();
+  }
+}
 
 function loadStoredData() {
   // Always enforce the shared room code 'myhouse-main-room'
@@ -517,6 +545,42 @@ function pushDataToFirebase() {
 }
 
 function setupEventListeners() {
+  // Lock Screen Events
+  document.getElementById('lockSetupBtn').addEventListener('click', () => {
+    document.getElementById('lockSetupModal').classList.remove('hidden');
+    document.getElementById('lockPinInput').value = localStorage.getItem('couple_budget_pin') || '';
+  });
+
+  document.getElementById('closeLockModalBtn').addEventListener('click', () => {
+    document.getElementById('lockSetupModal').classList.add('hidden');
+  });
+
+  document.getElementById('saveLockPinBtn').addEventListener('click', () => {
+    const pin = document.getElementById('lockPinInput').value.trim();
+    if (pin.length === 4 && !isNaN(pin)) {
+      localStorage.setItem('couple_budget_pin', pin);
+      document.getElementById('lockSetupModal').classList.add('hidden');
+      alert('🔒 4자리 비밀번호가 저장되었습니다!\n다음 접속 시부터 비밀번호 잠금 화면이 뜹니다.');
+      checkLockStatus();
+    } else {
+      alert('비밀번호는 숫자 4자리로 입력해 주세요!');
+    }
+  });
+
+  document.getElementById('disableLockPinBtn').addEventListener('click', () => {
+    localStorage.removeItem('couple_budget_pin');
+    document.getElementById('lockPinInput').value = '';
+    document.getElementById('lockSetupModal').classList.add('hidden');
+    alert('🔓 비밀번호 잠금이 해제되었습니다!');
+    checkLockStatus();
+  });
+
+  document.getElementById('unlockAppBtn').addEventListener('click', unlockApp);
+  document.getElementById('unlockPinInput').addEventListener('keyup', (e) => {
+    if (e.key === 'Enter') unlockApp();
+    if (e.target.value.length === 4) unlockApp();
+  });
+
   // Theme Toggle
   document.getElementById('themeToggleBtn').addEventListener('click', () => {
     const isDark = document.documentElement.getAttribute('data-theme') === 'dark';

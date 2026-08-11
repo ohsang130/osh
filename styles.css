@@ -964,3 +964,65 @@ input:focus, select:focus {
   position: relative;
   height: 250px;
 }
+
+/* Password Lock Screen Overlay Styling */
+.lock-screen-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: var(--bg-main);
+  backdrop-filter: blur(12px);
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.lock-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  padding: 36px 28px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-modal);
+  text-align: center;
+  max-width: 360px;
+  width: 100%;
+}
+
+.lock-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+}
+
+.lock-card h2 {
+  font-size: 20px;
+  margin-bottom: 8px;
+}
+
+.lock-card p {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 24px;
+}
+
+.pin-input-group input {
+  width: 180px;
+  padding: 12px;
+  font-size: 24px;
+  letter-spacing: 12px;
+  text-align: center;
+  border-radius: var(--radius-md);
+  border: 2px solid var(--primary-color);
+  background: var(--bg-card-subtle);
+  color: var(--text-primary);
+  outline: none;
+}
+
+.lock-error-msg {
+  color: #ef4444 !important;
+  font-weight: 700;
+  margin-top: 12px !important;
+}
