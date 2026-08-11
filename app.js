@@ -456,12 +456,14 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function checkSecretAuthGate() {
-  const isAuthorized = localStorage.getItem('couple_secret_authed') === 'true';
+  const isAuthorized = sessionStorage.getItem('couple_session_authed') === 'true';
   const overlay = document.getElementById('secretAuthOverlay');
   if (overlay) {
     if (isAuthorized) {
+      overlay.style.display = 'none';
       overlay.classList.add('hidden');
     } else {
+      overlay.style.display = 'flex';
       overlay.classList.remove('hidden');
       const passInp = document.getElementById('secretPassInput');
       if (passInp) passInp.focus();
@@ -476,12 +478,22 @@ window.verifySecretPass = function() {
   
   // Authorized secret passes: '1130' or master '0000'
   if (inputPass === '1130' || inputPass === '0000') {
-    localStorage.setItem('couple_secret_authed', 'true');
+    sessionStorage.setItem('couple_session_authed', 'true');
     const overlay = document.getElementById('secretAuthOverlay');
-    if (overlay) overlay.classList.add('hidden');
-    if (errorMsg) errorMsg.classList.add('hidden');
+    if (overlay) {
+      overlay.style.display = 'none';
+      overlay.classList.add('hidden');
+    }
+    if (errorMsg) {
+      errorMsg.style.display = 'none';
+      errorMsg.classList.add('hidden');
+    }
+    if (passElem) passElem.value = '';
   } else {
-    if (errorMsg) errorMsg.classList.remove('hidden');
+    if (errorMsg) {
+      errorMsg.style.display = 'block';
+      errorMsg.classList.remove('hidden');
+    }
     if (passElem) {
       passElem.value = '';
       passElem.focus();
@@ -492,6 +504,9 @@ window.verifySecretPass = function() {
 function loadStoredData() {
   // Always enforce the shared room code 'myhouse-main-room'
   state.roomCode = 'myhouse-main-room';
+  
+  // Guarantee master transactions are immediately populated
+  state.transactions = INITIAL_SAMPLE_DATA;
   
   const savedPay = localStorage.getItem('couple_budget_pay_methods');
   if (savedPay) state.payMethods = JSON.parse(savedPay);
@@ -519,21 +534,17 @@ function initFirebaseSync() {
   // Listen to realtime updates on this couple room
   roomRef.on('value', (snapshot) => {
     const val = snapshot.val();
-    if (val) {
-      if (val.transactions && Array.isArray(val.transactions)) {
-        state.transactions = val.transactions;
-      } else {
-        state.transactions = INITIAL_SAMPLE_DATA;
-      }
-      
-      if (val.budgets) state.budgets = val.budgets;
-      if (val.payMethods) state.payMethods = val.payMethods;
-      if (val.categories) state.categories = val.categories;
-      if (val.memos) state.memos = val.memos;
+    if (val && val.transactions && Array.isArray(val.transactions) && val.transactions.length > 0) {
+      state.transactions = val.transactions;
     } else {
       state.transactions = INITIAL_SAMPLE_DATA;
-      pushDataToFirebase();
     }
+    
+    if (val && val.budgets) state.budgets = val.budgets;
+    if (val && val.payMethods) state.payMethods = val.payMethods;
+    if (val && val.categories) state.categories = val.categories;
+    if (val && val.memos) state.memos = val.memos;
+
     renderApp();
   });
 }
@@ -552,46 +563,6 @@ function pushDataToFirebase() {
 }
 
 function setupEventListeners() {
-  // Secret Auth Gate Events (2번 부부 암호 방식: 1130)
-  const secretBtn = document.getElementById('secretAuthBtn');
-  const secretInp = document.getElementById('secretPassInput');
-  if (secretBtn) secretBtn.addEventListener('click', verifySecretPass);
-  if (secretInp) {
-    secretInp.addEventListener('keyup', (e) => {
-      if (e.key === 'Enter') verifySecretPass();
-    });
-  }
-
-  // Lock Screen Events
-  document.getElementById('lockSetupBtn').addEventListener('click', () => {
-    document.getElementById('lockSetupModal').classList.remove('hidden');
-    document.getElementById('lockPinInput').value = localStorage.getItem('couple_budget_pin') || '1130';
-  });
-
-  document.getElementById('closeLockModalBtn').addEventListener('click', () => {
-    document.getElementById('lockSetupModal').classList.add('hidden');
-  });
-
-  document.getElementById('saveLockPinBtn').addEventListener('click', () => {
-    const pin = document.getElementById('lockPinInput').value.trim();
-    if (pin.length === 4 && !isNaN(pin)) {
-      localStorage.setItem('couple_budget_pin', pin);
-      document.getElementById('lockSetupModal').classList.add('hidden');
-      alert('🔒 4자리 비밀번호가 저장되었습니다!\n다음 접속 시부터 비밀번호 잠금 화면이 뜹니다.');
-      checkLockStatus();
-    } else {
-      alert('비밀번호는 숫자 4자리로 입력해 주세요!');
-    }
-  });
-
-  document.getElementById('disableLockPinBtn').addEventListener('click', () => {
-    localStorage.removeItem('couple_budget_pin');
-    document.getElementById('lockPinInput').value = '';
-    document.getElementById('lockSetupModal').classList.add('hidden');
-    alert('🔓 비밀번호 잠금이 해제되었습니다!');
-    checkLockStatus();
-  });
-
   // Theme Toggle
   document.getElementById('themeToggleBtn').addEventListener('click', () => {
     const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
@@ -720,7 +691,7 @@ function setupEventListeners() {
 }
 
 // Master Render Function
-function renderApp() {
+window.renderApp = function renderApp() {
   document.getElementById('displayYear').textContent = `${state.currentYear}년`;
   document.getElementById('displayMonth').textContent = `${state.currentMonth}월`;
 
@@ -731,7 +702,7 @@ function renderApp() {
   renderTransactionList();
   renderBudgets();
   renderMonthlyMemo();
-}
+};
 
 function renderMonthlyMemo() {
   const monthKey = `${state.currentYear}-${String(state.currentMonth).padStart(2, '0')}`;
