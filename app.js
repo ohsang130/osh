@@ -452,54 +452,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initFirebaseSync();
   renderApp();
   initCharts();
-  checkSecretAuthGate();
 });
-
-function checkSecretAuthGate() {
-  const isAuthorized = sessionStorage.getItem('couple_session_authed') === 'true';
-  const overlay = document.getElementById('secretAuthOverlay');
-  if (overlay) {
-    if (isAuthorized) {
-      overlay.style.display = 'none';
-      overlay.classList.add('hidden');
-    } else {
-      overlay.style.display = 'flex';
-      overlay.classList.remove('hidden');
-      const passInp = document.getElementById('secretPassInput');
-      if (passInp) passInp.focus();
-    }
-  }
-}
-
-window.verifySecretPass = function() {
-  const passElem = document.getElementById('secretPassInput');
-  const inputPass = passElem ? passElem.value.trim() : '';
-  const errorMsg = document.getElementById('secretAuthError');
-  
-  // Authorized secret passes: '1130' or master '0000'
-  if (inputPass === '1130' || inputPass === '0000') {
-    sessionStorage.setItem('couple_session_authed', 'true');
-    const overlay = document.getElementById('secretAuthOverlay');
-    if (overlay) {
-      overlay.style.display = 'none';
-      overlay.classList.add('hidden');
-    }
-    if (errorMsg) {
-      errorMsg.style.display = 'none';
-      errorMsg.classList.add('hidden');
-    }
-    if (passElem) passElem.value = '';
-  } else {
-    if (errorMsg) {
-      errorMsg.style.display = 'block';
-      errorMsg.classList.remove('hidden');
-    }
-    if (passElem) {
-      passElem.value = '';
-      passElem.focus();
-    }
-  }
-};
 
 function loadStoredData() {
   // Always enforce the shared room code 'myhouse-main-room'
@@ -535,7 +488,9 @@ function initFirebaseSync() {
   roomRef.on('value', (snapshot) => {
     const val = snapshot.val();
     if (val && val.transactions && Array.isArray(val.transactions) && val.transactions.length > 0) {
-      state.transactions = val.transactions;
+      const serverIds = new Set(val.transactions.map(t => t.id));
+      const missingMaster = INITIAL_SAMPLE_DATA.filter(m => !serverIds.has(m.id));
+      state.transactions = [...val.transactions, ...missingMaster];
     } else {
       state.transactions = INITIAL_SAMPLE_DATA;
     }
@@ -667,6 +622,30 @@ function setupEventListeners() {
       if (tabId === 'memoTab') renderMonthlyMemo();
     });
   });
+
+  // Google Drive Cloud Backup Modal
+  const gdriveBtn = document.getElementById('gdriveBackupBtn');
+  if (gdriveBtn) {
+    gdriveBtn.addEventListener('click', () => {
+      document.getElementById('gdriveBackupModal').classList.remove('hidden');
+    });
+  }
+
+  const closeGdriveBtn = document.getElementById('closeGdriveModalBtn');
+  if (closeGdriveBtn) {
+    closeGdriveBtn.addEventListener('click', () => {
+      document.getElementById('gdriveBackupModal').classList.add('hidden');
+    });
+  }
+
+  const dlGdriveBtn = document.getElementById('downloadGdriveFileBtn');
+  if (dlGdriveBtn) {
+    dlGdriveBtn.addEventListener('click', () => {
+      exportBackupJSON();
+      alert('☁️ 구글 드라이브 백업 파일이 생성되었습니다!\n내 컴퓨터 [다운로드] 폴더의 백업 파일을 부부 구글 드라이브 폴더에 보관하시면 100% 안전합니다.');
+      document.getElementById('gdriveBackupModal').classList.add('hidden');
+    });
+  }
 
   // Backup & Restore & Excel Export
   document.getElementById('backupBtn').addEventListener('click', exportBackupJSON);

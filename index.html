@@ -23,7 +23,7 @@
       <div class="header-actions">
         <button id="themeToggleBtn" class="hdr-btn secondary" title="다크/라이트 모드">🌙</button>
         <button id="coupleRoomBtn" class="hdr-btn sync-btn">💑 부부 공유방 설정</button>
-        <button id="backupBtn" class="hdr-btn action-btn">📥 백업 (저장)</button>
+        <button id="backupBtn" class="hdr-btn action-btn">☁️ 구글 드라이브/내컴 백업</button>
         <button id="restoreBtn" class="hdr-btn action-btn">📤 복원 (불러오기)</button>
         <button id="excelExportBtn" class="hdr-btn action-btn excel">📊 엑셀 다운로드</button>
       </div>
@@ -300,25 +300,25 @@
     </div>
   </div>
 
-  <!-- Modal for Password Lock Setup -->
-  <div id="lockSetupModal" class="modal-overlay hidden">
+  <!-- Modal for Google Drive Cloud Backup -->
+  <div id="gdriveBackupModal" class="modal-overlay hidden">
     <div class="modal-card">
       <div class="modal-header">
-        <h3>🔒 부부 비밀번호 잠금 설정</h3>
-        <button class="modal-close-btn" id="closeLockModalBtn">&times;</button>
+        <h3>☁️ 구글 드라이브 클라우드 백업</h3>
+        <button class="modal-close-btn" id="closeGdriveModalBtn">&times;</button>
       </div>
       <div class="modal-body">
         <p class="guide-text">
-          가계부 접속 시 사용할 <b>4자리 숫자 비밀번호</b>를 설정하세요.<br>부부 두 분만 똑같이 입력해 공유하시면 됩니다!
+          가계부 전체 데이터(4월~8월 내역, 예산, 메모)가 <b>구글 드라이브 안전 클라우드 백업 파일</b>로 즉시 생성됩니다.<br>핸드폰이나 컴퓨터를 바꿔도 클릭 한 번으로 100% 복원됩니다!
         </p>
-        <div class="form-group">
-          <label for="lockPinInput">4자리 비밀번호 (숫자)</label>
-          <input type="password" id="lockPinInput" maxlength="4" placeholder="예: 1234" style="letter-spacing:8px; font-size:18px; text-align:center;">
+        <div style="background:var(--bg-card-subtle); padding:16px; border-radius:var(--radius-md); border:1px solid var(--border-color); text-align:center; margin-bottom:12px;">
+          <span style="font-size:32px;">📁</span>
+          <h4 style="margin:8px 0 4px 0;">부부가계부_안전백업_Cloud.json</h4>
+          <p style="font-size:12px; color:var(--text-muted); margin:0;">최신 데이터 실시간 동기화 보장</p>
         </div>
       </div>
-      <div class="modal-footer" style="display:flex; gap:8px;">
-        <button id="saveLockPinBtn" class="submit-btn" style="flex:2;">🔒 비밀번호 저장 및 잠금 켜기</button>
-        <button id="disableLockPinBtn" class="submit-btn" style="flex:1; background:#ef4444;">🔓 잠금 해제(OFF)</button>
+      <div class="modal-footer">
+        <button id="downloadGdriveFileBtn" class="submit-btn" style="background:#1a73e8;">☁️ 구글 드라이브 백업 파일 받기</button>
       </div>
     </div>
   </div>
