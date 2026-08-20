@@ -689,19 +689,38 @@ function renderMonthlyMemo() {
   if (titleElem) titleElem.textContent = `${state.currentMonth}월`;
 
   const memoTextarea = document.getElementById('monthlyMemoTextarea');
-  if (memoTextarea) {
-    memoTextarea.value = (state.memos && state.memos[monthKey]) || '';
+  const memoTextarea2 = document.getElementById('monthlyMemoTextarea2');
+
+  if (state.memos && state.memos[monthKey]) {
+    const memoData = state.memos[monthKey];
+    if (typeof memoData === 'object') {
+      if (memoTextarea) memoTextarea.value = memoData.m1 || '';
+      if (memoTextarea2) memoTextarea2.value = memoData.m2 || '';
+    } else {
+      // Backward compatibility if single string memo existed
+      if (memoTextarea) memoTextarea.value = memoData || '';
+      if (memoTextarea2) memoTextarea2.value = '';
+    }
+  } else {
+    if (memoTextarea) memoTextarea.value = '';
+    if (memoTextarea2) memoTextarea2.value = '';
   }
 }
 
 function saveMonthlyMemo() {
   const monthKey = `${state.currentYear}-${String(state.currentMonth).padStart(2, '0')}`;
   const memoTextarea = document.getElementById('monthlyMemoTextarea');
+  const memoTextarea2 = document.getElementById('monthlyMemoTextarea2');
+  
   if (!state.memos) state.memos = {};
   
-  state.memos[monthKey] = memoTextarea.value;
+  state.memos[monthKey] = {
+    m1: memoTextarea ? memoTextarea.value : '',
+    m2: memoTextarea2 ? memoTextarea2.value : ''
+  };
+
   pushDataToFirebase();
-  alert(`${state.currentYear}년 ${state.currentMonth}월 메모가 저장되었습니다!`);
+  alert(`${state.currentYear}년 ${state.currentMonth}월 메모가 양쪽 2칸 모두 안전하게 저장되었습니다!`);
 }
 
 function renderPayMethodChips() {

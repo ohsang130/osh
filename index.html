@@ -233,19 +233,30 @@
           </div>
         </div>
 
-        <!-- TAB 5: Monthly Notes / Notepad -->
+        <!-- TAB 5: Monthly Notes / Notepad (2 Columns: Sang-heon & So-young) -->
         <div class="tab-content" id="memoTab">
           <div class="tab-header-actions">
             <div>
               <h3>📝 <span id="memoTabMonthTitle">8월</span> 부부 월간 메모장</h3>
               <p style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">
-                이달의 경조사, 특수 지출 계획, 절약 다짐 등 자유롭게 기록해 보세요. 부부간 실시간 공유됩니다!
+                부부 각자의 공간으로 나누어 자유롭게 메모해 보세요! 실시간으로 공유됩니다.
               </p>
             </div>
             <button id="saveMonthlyMemoBtn" class="action-btn-sm">💾 메모 저장</button>
           </div>
-          <div class="memo-container" style="margin-top: 16px;">
-            <textarea id="monthlyMemoTextarea" class="memo-textarea" placeholder="예: &#10;- 8월 15일 삼촌 결혼식 축의금 10만원 예정&#10;- 이번 달 외식은 주 1회 이하로 절약해 보기!&#10;- 에어컨 청소비 지출 확인하기"></textarea>
+          
+          <div class="memo-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px;">
+            <!-- Left Column: Sang-heon's Memo -->
+            <div class="memo-card-box">
+              <h4 style="margin-bottom: 8px; font-size: 15px; color: var(--primary-color);">📌 메모장 1 (상헌)</h4>
+              <textarea id="monthlyMemoTextarea" class="memo-textarea" style="height: 380px;" placeholder="예: &#10;- 매달 자동이체 : 18일&#10;- 특수생활비 : 에어컨 결제&#10;- 8월 목표 예산 체크"></textarea>
+            </div>
+            
+            <!-- Right Column: So-young's Memo -->
+            <div class="memo-card-box">
+              <h4 style="margin-bottom: 8px; font-size: 15px; color: #ec4899;">📌 메모장 2 (소영)</h4>
+              <textarea id="monthlyMemoTextarea2" class="memo-textarea" style="height: 380px;" placeholder="예: &#10;- 이번 달 장보기 목록&#10;- 생일 선물 예산 확인&#10;- 8월 15일 약속 체크"></textarea>
+            </div>
           </div>
         </div>
 
