@@ -992,6 +992,61 @@ function renderTransactionList() {
     return true;
   });
 
+  // Calculate & Display Filtered Subtotal Sum Banner
+  const banner = document.getElementById('activeFilterTotalBanner');
+  const labelElem = document.getElementById('filterTotalLabel');
+  const amountElem = document.getElementById('filterTotalAmount');
+
+  const isFilteringActive = state.activePayFilter !== 'ALL' || state.activeCategoryFilter !== 'ALL' || state.activeTypeFilter !== 'ALL' || Boolean(state.searchQuery);
+
+  if (banner && isFilteringActive) {
+    banner.classList.remove('hidden');
+    banner.style.display = 'flex';
+
+    let totalSum = 0;
+    let incomeSum = 0;
+    let expenseSum = 0;
+
+    filtered.forEach(t => {
+      const amt = Number(t.amount) || 0;
+      if (t.type === 'income') incomeSum += amt;
+      else expenseSum += amt;
+    });
+
+    const filterDescriptions = [];
+    if (state.activePayFilter !== 'ALL') filterDescriptions.push(`💳 ${state.activePayFilter}`);
+    if (state.activeCategoryFilter !== 'ALL') filterDescriptions.push(`🏷️ ${state.activeCategoryFilter}`);
+    if (state.activeTypeFilter === 'income') filterDescriptions.push(`💰 수입만`);
+    if (state.activeTypeFilter === 'expense') filterDescriptions.push(`💸 지출만`);
+    if (state.searchQuery) filterDescriptions.push(`🔍 "${state.searchQuery}"`);
+
+    const filterTitle = filterDescriptions.join(' + ');
+
+    if (state.activeTypeFilter === 'income') {
+      labelElem.innerHTML = `💡 <b>[${filterTitle}]</b> 총 수입 합계 (${filtered.length}건)`;
+      amountElem.textContent = `+${incomeSum.toLocaleString()} 원`;
+      amountElem.style.color = '#10b981';
+      banner.style.background = '#ecfdf5';
+      banner.style.borderColor = '#a7f3d0';
+    } else if (state.activeTypeFilter === 'expense' || (expenseSum > 0 && incomeSum === 0)) {
+      labelElem.innerHTML = `💡 <b>[${filterTitle}]</b> 총 지출 합계 (${filtered.length}건)`;
+      amountElem.textContent = `-${expenseSum.toLocaleString()} 원`;
+      amountElem.style.color = '#ef4444';
+      banner.style.background = '#fef2f2';
+      banner.style.borderColor = '#fecaca';
+    } else {
+      const netSum = incomeSum - expenseSum;
+      labelElem.innerHTML = `💡 <b>[${filterTitle}]</b> 검색/필터 합계 (수입 ${incomeSum.toLocaleString()}원 / 지출 ${expenseSum.toLocaleString()}원)`;
+      amountElem.textContent = `${netSum >= 0 ? '+' : ''}${netSum.toLocaleString()} 원`;
+      amountElem.style.color = '#4338ca';
+      banner.style.background = '#eef2ff';
+      banner.style.borderColor = '#c7d2fe';
+    }
+  } else if (banner) {
+    banner.classList.add('hidden');
+    banner.style.display = 'none';
+  }
+
   filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
 
   const container = document.getElementById('txListContainer');
