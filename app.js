@@ -467,6 +467,9 @@ function loadStoredData() {
   const savedCat = localStorage.getItem('couple_budget_categories');
   if (savedCat) state.categories = JSON.parse(savedCat);
 
+  const savedIncomeCat = localStorage.getItem('couple_budget_income_categories');
+  if (savedIncomeCat) state.incomeCategories = JSON.parse(savedIncomeCat);
+
   const savedBudgets = localStorage.getItem('couple_budget_budgets');
   if (savedBudgets) state.budgets = JSON.parse(savedBudgets);
 
@@ -498,6 +501,7 @@ function initFirebaseSync() {
     if (val && val.budgets) state.budgets = val.budgets;
     if (val && val.payMethods) state.payMethods = val.payMethods;
     if (val && val.categories) state.categories = val.categories;
+    if (val && val.incomeCategories) state.incomeCategories = val.incomeCategories;
     if (val && val.memos) state.memos = val.memos;
 
     renderApp();
@@ -511,6 +515,7 @@ function pushDataToFirebase() {
       budgets: state.budgets,
       payMethods: state.payMethods,
       categories: state.categories,
+      incomeCategories: state.incomeCategories,
       memos: state.memos,
       lastUpdated: Date.now()
     });
@@ -663,6 +668,23 @@ function setupEventListeners() {
   document.getElementById('managePayMethodsBtn').addEventListener('click', () => openManageModal('payMethods'));
   document.getElementById('manageCategoriesBtn').addEventListener('click', () => openManageModal('categories'));
   document.getElementById('closeTagModalBtn').addEventListener('click', () => document.getElementById('manageTagsModal').classList.add('hidden'));
+
+  const expCatBtn = document.getElementById('manageExpenseCatBtn');
+  const incCatBtn = document.getElementById('manageIncomeCatBtn');
+  if (expCatBtn) {
+    expCatBtn.addEventListener('click', () => {
+      currentManageType = 'categories';
+      updateCategoryManageToggleUI();
+      renderManageTagList();
+    });
+  }
+  if (incCatBtn) {
+    incCatBtn.addEventListener('click', () => {
+      currentManageType = 'incomeCategories';
+      updateCategoryManageToggleUI();
+      renderManageTagList();
+    });
+  }
 
   // Save Budgets & Monthly Memo
   document.getElementById('saveBudgetsBtn').addEventListener('click', saveBudgets);
@@ -1324,18 +1346,46 @@ function copyInviteLink() {
 let currentManageType = 'payMethods';
 
 function openManageModal(type) {
-  currentManageType = type;
   const modal = document.getElementById('manageTagsModal');
   const title = document.getElementById('manageModalTitle');
-  title.textContent = type === 'payMethods' ? '💳 결제수단 관리' : '🏷️ 카테고리 관리';
+  const toggleContainer = document.getElementById('categoryManageTypeToggle');
+
+  if (type === 'payMethods') {
+    currentManageType = 'payMethods';
+    title.textContent = '💳 결제수단 관리';
+    if (toggleContainer) toggleContainer.classList.add('hidden');
+  } else {
+    // If managing categories, check current state type (expense or income)
+    currentManageType = state.type === 'income' ? 'incomeCategories' : 'categories';
+    title.textContent = '🏷️ 카테고리 관리';
+    if (toggleContainer) toggleContainer.classList.remove('hidden');
+    updateCategoryManageToggleUI();
+  }
+
   modal.classList.remove('hidden');
   renderManageTagList();
+}
+
+function updateCategoryManageToggleUI() {
+  const expBtn = document.getElementById('manageExpenseCatBtn');
+  const incBtn = document.getElementById('manageIncomeCatBtn');
+  if (expBtn && incBtn) {
+    if (currentManageType === 'incomeCategories') {
+      incBtn.classList.add('active');
+      expBtn.classList.remove('active');
+    } else {
+      expBtn.classList.add('active');
+      incBtn.classList.remove('active');
+    }
+  }
 }
 
 function renderManageTagList() {
   const list = document.getElementById('tagListItems');
   list.innerHTML = '';
   const items = state[currentManageType];
+
+  if (!items) return;
 
   items.forEach((item, idx) => {
     const li = document.createElement('li');

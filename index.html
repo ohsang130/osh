@@ -300,6 +300,11 @@
         <button class="modal-close-btn" id="closeTagModalBtn">&times;</button>
       </div>
       <div class="modal-body">
+        <!-- Category Sub-Type Toggle (Visible when managing Categories) -->
+        <div id="categoryManageTypeToggle" class="type-toggle-container hidden" style="margin-bottom: 12px;">
+          <button id="manageExpenseCatBtn" class="type-btn expense active" style="padding: 6px 12px; font-size: 13px;">💸 지출 카테고리</button>
+          <button id="manageIncomeCatBtn" class="type-btn income" style="padding: 6px 12px; font-size: 13px;">💰 수입 카테고리</button>
+        </div>
         <div class="add-tag-row">
           <input type="text" id="newTagNameInput" placeholder="새 항목 이름 입력...">
           <button id="addNewTagBtn" class="action-btn-sm">+ 추가</button>
