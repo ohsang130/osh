@@ -22,6 +22,7 @@
       </div>
       <div class="header-actions">
         <button id="themeToggleBtn" class="hdr-btn secondary" title="다크/라이트 모드">🌙</button>
+        <button id="fixedExpenseBtn" class="hdr-btn action-btn" style="background:#8b5cf6; color:#fff;" title="매달 반복 고정지출 관리">⚡ 고정지출 관리</button>
         <button id="coupleRoomBtn" class="hdr-btn sync-btn">💑 부부 공유방 설정</button>
         <button id="backupBtn" class="hdr-btn action-btn">☁️ 구글 드라이브/내컴 백업</button>
         <button id="restoreBtn" class="hdr-btn action-btn">📤 복원 (불러오기)</button>
@@ -346,6 +347,48 @@
       </div>
       <div class="modal-footer">
         <button id="downloadGdriveFileBtn" class="submit-btn" style="background:#1a73e8;">☁️ 구글 드라이브 백업 파일 받기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal for Fixed Expense Management & 1-Click Auto Registration -->
+  <div id="fixedExpenseModal" class="modal-overlay hidden">
+    <div class="modal-card" style="max-width: 520px;">
+      <div class="modal-header">
+        <h3>⚡ 매달 반복 고정지출 목록 관리</h3>
+        <button class="modal-close-btn" id="closeFixedModalBtn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="guide-text">
+          매달 반복해서 나가는 보험료, 관리비, 구독료 등을 미리 등록해 두고 <b>[⚡ 이번 달 지출로 1초 일괄 등록]</b> 버튼을 누르면 이번 달 내역으로 자동 추가됩니다!
+        </p>
+
+        <!-- New Fixed Expense Form -->
+        <div style="background:var(--bg-card-subtle); padding:12px; border-radius:var(--radius-md); border:1px solid var(--border-color); margin-bottom:14px;">
+          <h5 style="margin-bottom:8px; font-size:13px; color:var(--primary-color);">+ 새 고정지출 항목 추가</h5>
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:8px;">
+            <input type="text" id="fixedTitleInput" placeholder="항목명 (예: 삼성화재, 관리비)" style="padding:6px 10px; font-size:13px; border-radius:6px; border:1px solid var(--border-color);">
+            <input type="number" id="fixedAmountInput" placeholder="금액 (원)" style="padding:6px 10px; font-size:13px; border-radius:6px; border:1px solid var(--border-color);">
+          </div>
+          <div style="display:grid; grid-template-columns: 1fr 1fr 80px; gap:8px;">
+            <select id="fixedPayMethodSelect" style="padding:6px; font-size:12px; border-radius:6px; border:1px solid var(--border-color);"></select>
+            <select id="fixedCategorySelect" style="padding:6px; font-size:12px; border-radius:6px; border:1px solid var(--border-color);"></select>
+            <button id="addFixedItemBtn" class="action-btn-sm" style="background:var(--primary-color); color:#fff;">+ 추가</button>
+          </div>
+        </div>
+
+        <!-- Registered Fixed Items List -->
+        <div style="max-height: 220px; overflow-y: auto;">
+          <ul id="fixedItemsList" class="tag-manage-list">
+            <!-- Dynamically populated fixed items -->
+          </ul>
+        </div>
+      </div>
+      <div class="modal-footer" style="display:flex; justify-content:space-between; align-items:center;">
+        <span id="fixedTotalSumText" style="font-size:13px; font-weight:700; color:#8b5cf6;">총 고정지출: 0원</span>
+        <button id="applyFixedToCurrentMonthBtn" class="submit-btn" style="background:#8b5cf6; width:auto; padding:8px 16px;">
+          ⚡ 이번 달(<span id="fixedModalMonthLabel">9월</span>) 지출로 1초 일괄 등록!
+        </button>
       </div>
     </div>
   </div>

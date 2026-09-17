@@ -42,6 +42,11 @@ const state = {
     '특수생활비', '보험', '통신비', '동생', '고정비',
     '주택청약', '청년', '투자', '학식', '적금'
   ],
+  fixedExpenses: [
+    { title: '삼성화재 보험료', amount: 27695, payMethod: '현대카드', category: '보험' },
+    { title: '아파트 관리비', amount: 240000, payMethod: '통장입금', category: '관리비' },
+    { title: '인터넷/통신비', amount: 45000, payMethod: '신한카드', category: '통신비' }
+  ],
   
   budgets: {
     '2026-08': {
@@ -503,6 +508,7 @@ function initFirebaseSync() {
     if (val && val.payMethods) state.payMethods = val.payMethods;
     if (val && val.categories) state.categories = val.categories;
     if (val && val.incomeCategories) state.incomeCategories = val.incomeCategories;
+    if (val && val.fixedExpenses) state.fixedExpenses = val.fixedExpenses;
     if (val && val.memos) state.memos = val.memos;
 
     renderApp();
@@ -517,6 +523,7 @@ function pushDataToFirebase() {
       payMethods: state.payMethods,
       categories: state.categories,
       incomeCategories: state.incomeCategories,
+      fixedExpenses: state.fixedExpenses,
       memos: state.memos,
       lastUpdated: Date.now()
     });
@@ -660,6 +667,29 @@ function setupEventListeners() {
       alert('☁️ 구글 드라이브 백업 파일이 생성되었습니다!\n내 컴퓨터 [다운로드] 폴더의 백업 파일을 부부 구글 드라이브 폴더에 보관하시면 100% 안전합니다.');
       document.getElementById('gdriveBackupModal').classList.add('hidden');
     });
+  }
+
+  // Fixed Expense Management Modal
+  const fixedBtn = document.getElementById('fixedExpenseBtn');
+  if (fixedBtn) {
+    fixedBtn.addEventListener('click', openFixedExpenseModal);
+  }
+
+  const closeFixedBtn = document.getElementById('closeFixedModalBtn');
+  if (closeFixedBtn) {
+    closeFixedBtn.addEventListener('click', () => {
+      document.getElementById('fixedExpenseModal').classList.add('hidden');
+    });
+  }
+
+  const addFixedBtn = document.getElementById('addFixedItemBtn');
+  if (addFixedBtn) {
+    addFixedBtn.addEventListener('click', handleAddFixedItem);
+  }
+
+  const applyFixedBtn = document.getElementById('applyFixedToCurrentMonthBtn');
+  if (applyFixedBtn) {
+    applyFixedBtn.addEventListener('click', applyFixedExpensesToCurrentMonth);
   }
 
   // Backup & Restore & Excel Export
@@ -1513,3 +1543,137 @@ window.removeTagItem = function(idx) {
   renderManageTagList();
   renderApp();
 };
+
+// ==========================================
+// ⚡ Fixed Expense Management & 1-Click Auto Registration
+// ==========================================
+function openFixedExpenseModal() {
+  const modal = document.getElementById('fixedExpenseModal');
+  const monthLabel = document.getElementById('fixedModalMonthLabel');
+  if (monthLabel) monthLabel.textContent = `${state.currentMonth}월`;
+
+  populateFixedExpenseDropdowns();
+  renderFixedItemsList();
+  if (modal) modal.classList.remove('hidden');
+}
+
+function populateFixedExpenseDropdowns() {
+  const paySel = document.getElementById('fixedPayMethodSelect');
+  const catSel = document.getElementById('fixedCategorySelect');
+
+  if (paySel) {
+    paySel.innerHTML = '';
+    state.payMethods.forEach(pm => {
+      const opt = document.createElement('option');
+      opt.value = pm;
+      opt.textContent = pm;
+      paySel.appendChild(opt);
+    });
+  }
+
+  if (catSel) {
+    catSel.innerHTML = '';
+    state.categories.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c;
+      opt.textContent = c;
+      catSel.appendChild(opt);
+    });
+  }
+}
+
+function renderFixedItemsList() {
+  const list = document.getElementById('fixedItemsList');
+  const totalSumElem = document.getElementById('fixedTotalSumText');
+  if (!list) return;
+
+  list.innerHTML = '';
+  if (!state.fixedExpenses) state.fixedExpenses = [];
+
+  let totalSum = 0;
+
+  if (state.fixedExpenses.length === 0) {
+    list.innerHTML = '<li style="padding:14px; text-align:center; color:var(--text-muted); font-size:13px;">등록된 고정지출 항목이 없습니다. 위에 추가해보세요!</li>';
+  } else {
+    state.fixedExpenses.forEach((item, idx) => {
+      totalSum += Number(item.amount) || 0;
+      const li = document.createElement('li');
+      li.className = 'tag-manage-item';
+      li.style.cssText = 'display:flex; justify-content:space-between; align-items:center; padding:8px 12px; font-size:13px; border-bottom:1px solid var(--border-color);';
+      li.innerHTML = `
+        <div>
+          <b>${item.title}</b>
+          <span style="font-size:11px; color:var(--text-muted); margin-left:6px;">(${item.payMethod} / ${item.category})</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-weight:800; color:#ef4444;">-${Number(item.amount).toLocaleString()}원</span>
+          <button class="action-icon-btn" onclick="removeFixedItem(${idx})" title="삭제">🗑️</button>
+        </div>
+      `;
+      list.appendChild(li);
+    });
+  }
+
+  if (totalSumElem) {
+    totalSumElem.textContent = `총 고정지출: ${totalSum.toLocaleString()}원`;
+  }
+}
+
+function handleAddFixedItem() {
+  const title = document.getElementById('fixedTitleInput').value.trim();
+  const amount = parseInt(document.getElementById('fixedAmountInput').value, 10);
+  const payMethod = document.getElementById('fixedPayMethodSelect').value;
+  const category = document.getElementById('fixedCategorySelect').value;
+
+  if (!title || !amount || amount <= 0) {
+    alert('항목명과 올바른 금액을 입력해 주세요.');
+    return;
+  }
+
+  if (!state.fixedExpenses) state.fixedExpenses = [];
+  state.fixedExpenses.push({ title, amount, payMethod, category });
+
+  pushDataToFirebase();
+  document.getElementById('fixedTitleInput').value = '';
+  document.getElementById('fixedAmountInput').value = '';
+  renderFixedItemsList();
+}
+
+window.removeFixedItem = function(idx) {
+  if (state.fixedExpenses && state.fixedExpenses[idx]) {
+    state.fixedExpenses.splice(idx, 1);
+    pushDataToFirebase();
+    renderFixedItemsList();
+  }
+};
+
+function applyFixedExpensesToCurrentMonth() {
+  if (!state.fixedExpenses || state.fixedExpenses.length === 0) {
+    alert('등록된 고정지출 항목이 없습니다. 먼저 항목을 추가해 주세요.');
+    return;
+  }
+
+  // Generate 1st day of current selected year/month
+  const firstDayStr = `${state.currentYear}-${String(state.currentMonth).padStart(2, '0')}-01`;
+
+  let addedCount = 0;
+  state.fixedExpenses.forEach((item, i) => {
+    const newTx = {
+      id: `tx-fixed-${Date.now()}-${i}`,
+      type: 'expense',
+      date: firstDayStr,
+      amount: item.amount,
+      payMethod: item.payMethod,
+      category: item.category,
+      memo: item.title
+    };
+    state.transactions.push(newTx);
+    addedCount++;
+  });
+
+  pushDataToFirebase();
+  renderApp();
+
+  document.getElementById('fixedExpenseModal').classList.add('hidden');
+  alert(`⚡ ${state.currentYear}년 ${state.currentMonth}월 지출 내역으로 고정지출 ${addedCount}건이 1초 만에 자동 등록되었습니다!`);
+}
