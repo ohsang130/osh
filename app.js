@@ -24,6 +24,7 @@ const state = {
   editingTxId: null,
   activePayFilter: 'ALL',
   activeCategoryFilter: 'ALL',
+  activeTypeFilter: 'ALL',
   searchQuery: '',
   roomCode: 'myhouse-main-room', // Fixed shared room code so PC and mobile auto-connect!
 
@@ -591,6 +592,15 @@ function setupEventListeners() {
     renderTransactionList();
   });
 
+  const typeFilterSelect = document.getElementById('filterType');
+  if (typeFilterSelect) {
+    typeFilterSelect.addEventListener('change', (e) => {
+      state.activeTypeFilter = e.target.value;
+      renderFilterOptions();
+      renderTransactionList();
+    });
+  }
+
   document.getElementById('filterPayMethod').addEventListener('change', (e) => {
     state.activePayFilter = e.target.value;
     renderTransactionList();
@@ -791,7 +801,18 @@ function renderFilterOptions() {
 
   const catSelect = document.getElementById('filterCategory');
   catSelect.innerHTML = '<option value="ALL">전체 카테고리</option>';
-  state.categories.forEach(cat => {
+  
+  let targetCats = [];
+  if (state.activeTypeFilter === 'income') {
+    targetCats = state.incomeCategories;
+  } else if (state.activeTypeFilter === 'expense') {
+    targetCats = state.categories;
+  } else {
+    // Unique list of both income and expense categories
+    targetCats = Array.from(new Set([...state.incomeCategories, ...state.categories]));
+  }
+
+  targetCats.forEach(cat => {
     const opt = document.createElement('option');
     opt.value = cat;
     opt.textContent = cat;
@@ -957,6 +978,7 @@ function renderTransactionList() {
   });
 
   let filtered = monthTxs.filter(tx => {
+    if (state.activeTypeFilter !== 'ALL' && tx.type !== state.activeTypeFilter) return false;
     if (state.activePayFilter !== 'ALL' && tx.payMethod !== state.activePayFilter) return false;
     if (state.activeCategoryFilter !== 'ALL' && tx.category !== state.activeCategoryFilter) return false;
     if (state.searchQuery) {
