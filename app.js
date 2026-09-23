@@ -47,6 +47,11 @@ const state = {
     { title: '아파트 관리비', amount: 240000, payMethod: '통장입금', category: '관리비' },
     { title: '인터넷/통신비', amount: 45000, payMethod: '신한카드', category: '통신비' }
   ],
+  familyEvents: [
+    { id: 'ev-1', date: '2026-05-15', type: 'sent_wedding', name: '삼촌', relation: '친가 친척', amount: 100000 },
+    { id: 'ev-2', date: '2026-06-20', type: 'received_wedding', name: '김철수', relation: '직장 동료', amount: 50000 },
+    { id: 'ev-3', date: '2026-07-10', type: 'sent_condolence', name: '박영희 부친상', relation: '대학 동창', amount: 50000 }
+  ],
   
   budgets: {
     '2026-08': {
@@ -509,6 +514,7 @@ function initFirebaseSync() {
     if (val && val.categories) state.categories = val.categories;
     if (val && val.incomeCategories) state.incomeCategories = val.incomeCategories;
     if (val && val.fixedExpenses) state.fixedExpenses = val.fixedExpenses;
+    if (val && val.familyEvents) state.familyEvents = val.familyEvents;
     if (val && val.memos) state.memos = val.memos;
 
     renderApp();
@@ -524,6 +530,7 @@ function pushDataToFirebase() {
       categories: state.categories,
       incomeCategories: state.incomeCategories,
       fixedExpenses: state.fixedExpenses,
+      familyEvents: state.familyEvents,
       memos: state.memos,
       lastUpdated: Date.now()
     });
@@ -642,8 +649,25 @@ function setupEventListeners() {
       if (tabId === 'budgetTab') renderBudgets();
       if (tabId === 'chartTab') updateCharts();
       if (tabId === 'memoTab') renderMonthlyMemo();
+      if (tabId === 'eventsTab') renderEventsTab();
     });
   });
+
+  // Events Form & Search Listeners
+  const eventForm = document.getElementById('eventRecordForm');
+  if (eventForm) {
+    eventForm.addEventListener('submit', handleAddEventRecord);
+  }
+
+  const eventSearch = document.getElementById('eventSearchInput');
+  if (eventSearch) {
+    eventSearch.addEventListener('input', renderEventsTab);
+  }
+
+  const eventFilterType = document.getElementById('eventFilterType');
+  if (eventFilterType) {
+    eventFilterType.addEventListener('change', renderEventsTab);
+  }
 
   // Google Drive Cloud Backup Modal
   const gdriveBtn = document.getElementById('gdriveBackupBtn');
@@ -743,6 +767,7 @@ window.renderApp = function renderApp() {
   renderTransactionList();
   renderBudgets();
   renderMonthlyMemo();
+  renderEventsTab();
 };
 
 function renderMonthlyMemo() {
@@ -1677,3 +1702,137 @@ function applyFixedExpensesToCurrentMonth() {
   document.getElementById('fixedExpenseModal').classList.add('hidden');
   alert(`⚡ ${state.currentYear}년 ${state.currentMonth}월 지출 내역으로 고정지출 ${addedCount}건이 1초 만에 자동 등록되었습니다!`);
 }
+
+// ==========================================
+// 💌 Family Events Ledger (축의금 / 부의금 누적 관리 장부)
+// ==========================================
+function renderEventsTab() {
+  const tbody = document.getElementById('eventRecordsTbody');
+  if (!tbody) return;
+
+  if (!state.familyEvents) state.familyEvents = [];
+
+  const filterType = document.getElementById('eventFilterType') ? document.getElementById('eventFilterType').value : 'ALL';
+  const searchQuery = document.getElementById('eventSearchInput') ? document.getElementById('eventSearchInput').value.trim().toLowerCase() : '';
+
+  // 1. Calculate Summary Totals
+  let totalRecWed = 0;
+  let totalSentWed = 0;
+  let totalSentCon = 0;
+  let totalRecCon = 0;
+
+  state.familyEvents.forEach(ev => {
+    const amt = Number(ev.amount) || 0;
+    if (ev.type === 'received_wedding') totalRecWed += amt;
+    if (ev.type === 'sent_wedding') totalSentWed += amt;
+    if (ev.type === 'sent_condolence') totalSentCon += amt;
+    if (ev.type === 'received_condolence') totalRecCon += amt;
+  });
+
+  const netBalance = (totalRecWed + totalRecCon) - (totalSentWed + totalSentCon);
+
+  const recWedElem = document.getElementById('eventTotalReceivedWedding');
+  const sentWedElem = document.getElementById('eventTotalSentWedding');
+  const sentConElem = document.getElementById('eventTotalSentCondolence');
+  const netBalElem = document.getElementById('eventNetBalance');
+
+  if (recWedElem) recWedElem.textContent = `+${totalRecWed.toLocaleString()} 원`;
+  if (sentWedElem) sentWedElem.textContent = `-${totalSentWed.toLocaleString()} 원`;
+  if (sentConElem) sentConElem.textContent = `-${totalSentCon.toLocaleString()} 원`;
+  if (netBalElem) {
+    netBalElem.textContent = `${netBalance >= 0 ? '+' : ''}${netBalance.toLocaleString()} 원`;
+    netBalElem.style.color = netBalance >= 0 ? '#d97706' : '#ef4444';
+  }
+
+  // 2. Filter records
+  let filtered = state.familyEvents.filter(ev => {
+    if (filterType !== 'ALL' && ev.type !== filterType) return false;
+    if (searchQuery) {
+      const matchName = ev.name && ev.name.toLowerCase().includes(searchQuery);
+      const matchRel = ev.relation && ev.relation.toLowerCase().includes(searchQuery);
+      const matchAmt = ev.amount.toString().includes(searchQuery);
+      if (!matchName && !matchRel && !matchAmt) return false;
+    }
+    return true;
+  });
+
+  // Sort date descending
+  filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+  // 3. Render Table Rows
+  tbody.innerHTML = '';
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" style="padding: 30px; text-align: center; color: var(--text-muted);">기록된 경조사 내역이 없습니다. 위에 입력해 보세요!</td></tr>`;
+    return;
+  }
+
+  const typeBadges = {
+    'sent_wedding': '<span class="badge" style="background:#eff6ff; color:#2563eb; font-weight:700;">💌 보낸 축의금</span>',
+    'received_wedding': '<span class="badge" style="background:#ecfdf5; color:#059669; font-weight:700;">🎁 받은 축의금</span>',
+    'sent_condolence': '<span class="badge" style="background:#fef2f2; color:#dc2626; font-weight:700;">🙏 보낸 부의금</span>',
+    'received_condolence': '<span class="badge" style="background:#f3f4f6; color:#4b5563; font-weight:700;">🤍 받은 부의금</span>',
+    'other': '<span class="badge" style="background:#fffbeb; color:#d97706; font-weight:700;">🎉 기타 경조사</span>'
+  };
+
+  filtered.forEach(ev => {
+    const isOut = ev.type === 'sent_wedding' || ev.type === 'sent_condolence';
+    const tr = document.createElement('tr');
+    tr.style.cssText = 'border-bottom: 1px solid var(--border-color);';
+    tr.innerHTML = `
+      <td style="padding: 10px 12px; color: var(--text-secondary);">${ev.date}</td>
+      <td style="padding: 10px 12px;">${typeBadges[ev.type] || ev.type}</td>
+      <td style="padding: 10px 12px; font-weight: 700;">${ev.name}</td>
+      <td style="padding: 10px 12px; color: var(--text-secondary);">${ev.relation || '-'}</td>
+      <td style="padding: 10px 12px; text-align: right; font-weight: 800; color: ${isOut ? '#ef4444' : '#10b981'};">
+        ${isOut ? '-' : '+'}${Number(ev.amount).toLocaleString()} 원
+      </td>
+      <td style="padding: 10px 12px; text-align: center;">
+        <button class="action-icon-btn" onclick="deleteEventRecord('${ev.id}')" title="삭제">🗑️</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function handleAddEventRecord() {
+  const date = document.getElementById('eventDate').value;
+  const type = document.getElementById('eventType').value;
+  const name = document.getElementById('eventName').value.trim();
+  const relation = document.getElementById('eventRelation').value.trim();
+  const amount = parseInt(document.getElementById('eventAmount').value, 10);
+
+  if (!date || !name || !amount || amount <= 0) {
+    alert('날짜, 이름, 올바른 금액을 입력해 주세요.');
+    return;
+  }
+
+  if (!state.familyEvents) state.familyEvents = [];
+
+  const newEvent = {
+    id: 'ev-' + Date.now(),
+    date,
+    type,
+    name,
+    relation,
+    amount
+  };
+
+  state.familyEvents.push(newEvent);
+  pushDataToFirebase();
+
+  document.getElementById('eventName').value = '';
+  document.getElementById('eventRelation').value = '';
+  document.getElementById('eventAmount').value = '';
+
+  renderEventsTab();
+  alert(`💌 '${name}' 님 경조사 내역이 장부에 성공적으로 등록되었습니다!`);
+}
+
+window.deleteEventRecord = function(id) {
+  if (confirm('이 경조사 기록을 정말 삭제하시겠습니까?')) {
+    state.familyEvents = state.familyEvents.filter(ev => String(ev.id) !== String(id));
+    pushDataToFirebase();
+    renderEventsTab();
+  }
+};

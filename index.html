@@ -159,6 +159,7 @@
           <button class="view-tab-btn" data-tab="budgetTab">🎯 카테고리별 목표/예산</button>
           <button class="view-tab-btn" data-tab="chartTab">📊 지출 분석 차트</button>
           <button class="view-tab-btn" data-tab="memoTab">📝 월간 메모장</button>
+          <button class="view-tab-btn" data-tab="eventsTab" style="color:#d97706; font-weight:700;">💌 경조사(축의/부의) 장부</button>
         </nav>
 
         <!-- TAB 1: Transaction List -->
@@ -269,6 +270,91 @@
               <h4 style="margin-bottom: 8px; font-size: 15px; color: #ec4899;">📌 메모장 2 (소영)</h4>
               <textarea id="monthlyMemoTextarea2" class="memo-textarea" style="height: 380px;" placeholder="예: &#10;- 이번 달 장보기 목록&#10;- 생일 선물 예산 확인&#10;- 8월 15일 약속 체크"></textarea>
             </div>
+          </div>
+        </div>
+
+        <!-- TAB 6: Family Events Ledger (축의금 / 부의금 누적 관리 장부) -->
+        <div class="tab-content" id="eventsTab">
+          <div class="tab-header-actions">
+            <div>
+              <h3>💌 경조사 (축의금 / 부의금) 영구 누적 장부</h3>
+              <p style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">
+                월별에 상관없이 <b>평생 누적 관리되는 부부 경조사 장부</b>입니다. 받은 돈(축의/부의)과 보낸 돈을 한눈에 파악하세요!
+              </p>
+            </div>
+          </div>
+
+          <!-- Event Summary Cards Grid -->
+          <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 16px; margin-bottom: 16px;">
+            <div style="background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: var(--radius-md); padding: 12px 16px;">
+              <span style="font-size: 12px; color: #047857; font-weight: 700;">🎁 총 받은 축의금</span>
+              <div id="eventTotalReceivedWedding" style="font-size: 18px; font-weight: 800; color: #059669; margin-top: 4px;">0 원</div>
+            </div>
+            <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: var(--radius-md); padding: 12px 16px;">
+              <span style="font-size: 12px; color: #1e40af; font-weight: 700;">💌 총 보낸 축의금</span>
+              <div id="eventTotalSentWedding" style="font-size: 18px; font-weight: 800; color: #2563eb; margin-top: 4px;">0 원</div>
+            </div>
+            <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: var(--radius-md); padding: 12px 16px;">
+              <span style="font-size: 12px; color: #991b1b; font-weight: 700;">🙏 총 보낸 부의금</span>
+              <div id="eventTotalSentCondolence" style="font-size: 18px; font-weight: 800; color: #dc2626; margin-top: 4px;">0 원</div>
+            </div>
+            <div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: var(--radius-md); padding: 12px 16px;">
+              <span style="font-size: 12px; color: #92400e; font-weight: 700;">📊 누적 수지 순잔액</span>
+              <div id="eventNetBalance" style="font-size: 18px; font-weight: 800; color: #d97706; margin-top: 4px;">0 원</div>
+            </div>
+          </div>
+
+          <!-- New Event Record Form Box -->
+          <div style="background: var(--bg-card-subtle); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 16px; margin-bottom: 20px;">
+            <h4 style="margin-bottom: 12px; font-size: 15px; color: var(--primary-color);">+ 새 경조사 내역 추가하기</h4>
+            <form id="eventRecordForm" onsubmit="return false;" style="display: grid; grid-template-columns: 140px 150px 140px 1fr 140px 100px; gap: 8px; align-items: center;">
+              <input type="date" id="eventDate" required style="padding: 8px; font-size: 13px; border-radius: 6px; border: 1px solid var(--border-color);">
+              <select id="eventType" required style="padding: 8px; font-size: 13px; border-radius: 6px; border: 1px solid var(--border-color);">
+                <option value="sent_wedding">💌 보낸 축의금</option>
+                <option value="received_wedding">🎁 받은 축의금</option>
+                <option value="sent_condolence">🙏 보낸 부의금</option>
+                <option value="received_condolence">🤍 받은 부의금</option>
+                <option value="other">🎉 기타 경조사(돌잔치 등)</option>
+              </select>
+              <input type="text" id="eventName" placeholder="이름 (예: 삼촌, 김철수)" required style="padding: 8px; font-size: 13px; border-radius: 6px; border: 1px solid var(--border-color);">
+              <input type="text" id="eventRelation" placeholder="관계/메모 (예: 직장동료, 사촌)" style="padding: 8px; font-size: 13px; border-radius: 6px; border: 1px solid var(--border-color);">
+              <input type="number" id="eventAmount" placeholder="금액 (원)" required style="padding: 8px; font-size: 13px; border-radius: 6px; border: 1px solid var(--border-color);">
+              <button type="submit" id="addEventSubmitBtn" class="action-btn-sm" style="background: var(--primary-color); color: #fff; height: 36px;">+ 등록</button>
+            </form>
+          </div>
+
+          <!-- Search & Filter Controls for Events -->
+          <div style="display: flex; gap: 10px; margin-bottom: 12px;">
+            <div class="search-input-wrapper" style="flex: 1;">
+              <span class="search-icon">🔍</span>
+              <input type="text" id="eventSearchInput" placeholder="이름 또는 관계/메모 검색..">
+            </div>
+            <select id="eventFilterType" class="filter-select" style="width: 180px;">
+              <option value="ALL">전체 경조사 항목</option>
+              <option value="sent_wedding">💌 보낸 축의금만</option>
+              <option value="received_wedding">🎁 받은 축의금만</option>
+              <option value="sent_condolence">🙏 보낸 부의금만</option>
+              <option value="received_condolence">🤍 받은 부의금만</option>
+            </select>
+          </div>
+
+          <!-- Events Records Table -->
+          <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 13px; text-align: left;">
+              <thead>
+                <tr style="background: var(--bg-card-subtle); border-bottom: 2px solid var(--border-color); color: var(--text-secondary);">
+                  <th style="padding: 10px 12px; width: 110px;">날짜</th>
+                  <th style="padding: 10px 12px; width: 140px;">구분</th>
+                  <th style="padding: 10px 12px; width: 140px;">이름 / 대상</th>
+                  <th style="padding: 10px 12px;">관계 및 메모</th>
+                  <th style="padding: 10px 12px; width: 130px; text-align: right;">금액</th>
+                  <th style="padding: 10px 12px; width: 80px; text-align: center;">관리</th>
+                </tr>
+              </thead>
+              <tbody id="eventRecordsTbody">
+                <!-- Dynamically populated event rows -->
+              </tbody>
+            </table>
           </div>
         </div>
 
