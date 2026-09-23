@@ -48,9 +48,57 @@ const state = {
     { title: '인터넷/통신비', amount: 45000, payMethod: '신한카드', category: '통신비' }
   ],
   familyEvents: [
-    { id: 'ev-1', date: '2026-05-15', type: 'sent_wedding', name: '삼촌', relation: '친가 친척', amount: 100000 },
-    { id: 'ev-2', date: '2026-06-20', type: 'received_wedding', name: '김철수', relation: '직장 동료', amount: 50000 },
-    { id: 'ev-3', date: '2026-07-10', type: 'sent_condolence', name: '박영희 부친상', relation: '대학 동창', amount: 50000 }
+    { id: 'ev-w01', date: '2026-09-01', type: 'received_wedding', name: '최성완', relation: '상헌친구', amount: 200000 },
+    { id: 'ev-w02', date: '2026-09-01', type: 'received_wedding', name: '임성환', relation: '상헌친구', amount: 200000 },
+    { id: 'ev-w03', date: '2026-09-01', type: 'received_wedding', name: '표창우', relation: '상헌친구', amount: 300000 },
+    { id: 'ev-w04', date: '2026-09-01', type: 'received_wedding', name: '박대호', relation: '나행병원', amount: 100000 },
+    { id: 'ev-w05', date: '2026-09-01', type: 'received_wedding', name: '류미경', relation: '나행병원', amount: 50000 },
+    { id: 'ev-w06', date: '2026-09-01', type: 'received_wedding', name: '정정현', relation: '상헌친구', amount: 150000 },
+    { id: 'ev-w07', date: '2026-09-01', type: 'received_wedding', name: '김진아', relation: '상헌친구', amount: 150000 },
+    { id: 'ev-w08', date: '2026-09-01', type: 'received_wedding', name: '김동하', relation: '나행병원', amount: 50000 },
+    { id: 'ev-w09', date: '2026-09-01', type: 'received_wedding', name: '김대용', relation: '나행병원', amount: 100000 },
+    { id: 'ev-w10', date: '2026-09-01', type: 'received_wedding', name: '박혜진', relation: '나행병원', amount: 100000 },
+    { id: 'ev-w11', date: '2026-09-01', type: 'received_wedding', name: '최진아', relation: '상헌친구', amount: 200000 },
+    { id: 'ev-w12', date: '2026-09-01', type: 'received_wedding', name: '이수현', relation: '나행병원', amount: 150000 },
+    { id: 'ev-w13', date: '2026-09-01', type: 'received_wedding', name: '박효선', relation: '나행병원', amount: 100000 },
+    { id: 'ev-w14', date: '2026-09-01', type: 'received_wedding', name: '김완호', relation: '나행병원', amount: 50000 },
+    { id: 'ev-w15', date: '2026-09-01', type: 'received_wedding', name: '정미화', relation: '나행병원', amount: 50000 },
+    { id: 'ev-w16', date: '2026-09-01', type: 'received_wedding', name: '이연향', relation: '나행병원', amount: 50000 },
+    { id: 'ev-w17', date: '2026-09-01', type: 'received_wedding', name: '이유정', relation: '나행병원', amount: 50000 },
+    { id: 'ev-w18', date: '2026-09-01', type: 'received_wedding', name: '정경란', relation: '나행병원', amount: 100000 },
+    { id: 'ev-w19', date: '2026-09-01', type: 'received_wedding', name: '백명길', relation: '나행병원', amount: 100000 },
+    { id: 'ev-w20', date: '2026-09-01', type: 'received_wedding', name: '김영웅', relation: '상헌친구', amount: 100000 },
+    { id: 'ev-w21', date: '2026-09-01', type: 'received_wedding', name: '염철용', relation: '상헌친구', amount: 100000 },
+    { id: 'ev-w22', date: '2026-09-01', type: 'received_wedding', name: '김보민', relation: '상헌친구', amount: 200000 },
+    { id: 'ev-w23', date: '2026-09-01', type: 'received_wedding', name: '김수호', relation: '상헌친구', amount: 200000 },
+    { id: 'ev-w24', date: '2026-09-01', type: 'received_wedding', name: '심준영부부', relation: '상헌친구', amount: 250000 },
+    { id: 'ev-w25', date: '2026-09-01', type: 'received_wedding', name: '박구봉', relation: '나행병원', amount: 50000 },
+    { id: 'ev-w26', date: '2026-09-01', type: 'received_wedding', name: '이하늘', relation: '나행병원', amount: 150000 },
+    { id: 'ev-w27', date: '2026-09-01', type: 'received_wedding', name: '하정헌', relation: '나행병원', amount: 150000 },
+    { id: 'ev-w28', date: '2026-09-01', type: 'received_wedding', name: '김린아', relation: '상헌친구', amount: 200000 },
+    { id: 'ev-w29', date: '2026-09-01', type: 'received_wedding', name: '김대욱', relation: '나행병원', amount: 50000 },
+    { id: 'ev-w30', date: '2026-09-01', type: 'received_wedding', name: '승덕영', relation: '나행병원', amount: 50000 },
+    { id: 'ev-w31', date: '2026-09-01', type: 'received_wedding', name: '김현태', relation: '나행병원', amount: 50000 },
+    { id: 'ev-w32', date: '2026-09-01', type: 'received_wedding', name: '김성민', relation: '나행병원', amount: 50000 },
+    { id: 'ev-w33', date: '2026-09-01', type: 'received_wedding', name: '김태연', relation: '나행병원', amount: 50000 },
+    { id: 'ev-w34', date: '2026-09-01', type: 'received_wedding', name: '권정은', relation: '나행병원', amount: 50000 },
+    { id: 'ev-w35', date: '2026-09-01', type: 'received_wedding', name: '최지윤', relation: '나행병원', amount: 50000 },
+    { id: 'ev-w36', date: '2026-09-01', type: 'received_wedding', name: '전수은', relation: '나행병원', amount: 50000 },
+    { id: 'ev-w37', date: '2026-09-01', type: 'received_wedding', name: '이순남', relation: '나행병원', amount: 50000 },
+    { id: 'ev-w38', date: '2026-09-01', type: 'received_wedding', name: '고영훈', relation: '상헌친구', amount: 200000 },
+    { id: 'ev-w39', date: '2026-09-01', type: 'received_wedding', name: '오희진', relation: '나행병원', amount: 100000 },
+    { id: 'ev-w40', date: '2026-09-01', type: 'received_wedding', name: '김태완', relation: '나행병원', amount: 100000 },
+    { id: 'ev-w41', date: '2026-09-01', type: 'received_wedding', name: '온준혁', relation: '상헌친구', amount: 200000 },
+    { id: 'ev-w42', date: '2026-09-01', type: 'received_wedding', name: '변여은', relation: '나행병원', amount: 100000 },
+    { id: 'ev-w43', date: '2026-09-01', type: 'received_wedding', name: '정지영', relation: '나행병원', amount: 100000 },
+    { id: 'ev-w44', date: '2026-09-01', type: 'received_wedding', name: '구하랑', relation: '상헌친구', amount: 100000 },
+    { id: 'ev-w45', date: '2026-09-01', type: 'received_wedding', name: '김다연', relation: '상헌친구', amount: 100000 },
+    { id: 'ev-w46', date: '2026-09-01', type: 'received_wedding', name: '이태한', relation: '나행병원', amount: 100000 },
+    { id: 'ev-w47', date: '2026-09-01', type: 'received_wedding', name: '백선미', relation: '나행병원', amount: 300000 },
+    { id: 'ev-w48', date: '2026-09-01', type: 'received_wedding', name: '김희곤', relation: '상헌친구', amount: 100000 },
+    { id: 'ev-w49', date: '2026-09-01', type: 'received_wedding', name: '성일상', relation: '나행병원', amount: 100000 },
+    { id: 'ev-w50', date: '2026-09-01', type: 'received_wedding', name: '김태일', relation: '나행병원', amount: 100000 },
+    { id: 'ev-w51', date: '2026-09-01', type: 'received_wedding', name: '이현지', relation: '나행병원', amount: 100000 }
   ],
   
   budgets: {
@@ -514,7 +562,12 @@ function initFirebaseSync() {
     if (val && val.categories) state.categories = val.categories;
     if (val && val.incomeCategories) state.incomeCategories = val.incomeCategories;
     if (val && val.fixedExpenses) state.fixedExpenses = val.fixedExpenses;
-    if (val && val.familyEvents) state.familyEvents = val.familyEvents;
+    if (val && val.familyEvents && Array.isArray(val.familyEvents) && val.familyEvents.length > 0) {
+      const serverEvIds = new Set(val.familyEvents.map(e => e.id));
+      const defaultEvList = state.familyEvents || [];
+      const missingMasterEv = defaultEvList.filter(m => !serverEvIds.has(m.id));
+      state.familyEvents = [...val.familyEvents, ...missingMasterEv];
+    }
     if (val && val.memos) state.memos = val.memos;
 
     renderApp();
