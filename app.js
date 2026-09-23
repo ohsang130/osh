@@ -48,57 +48,57 @@ const state = {
     { title: '인터넷/통신비', amount: 45000, payMethod: '신한카드', category: '통신비' }
   ],
   familyEvents: [
-    { id: 'ev-w01', date: '2026-09-01', type: 'received_wedding', name: '최성완', relation: '상헌친구', amount: 200000 },
-    { id: 'ev-w02', date: '2026-09-01', type: 'received_wedding', name: '임성환', relation: '상헌친구', amount: 200000 },
-    { id: 'ev-w03', date: '2026-09-01', type: 'received_wedding', name: '표창우', relation: '상헌친구', amount: 300000 },
-    { id: 'ev-w04', date: '2026-09-01', type: 'received_wedding', name: '박대호', relation: '나행병원', amount: 100000 },
-    { id: 'ev-w05', date: '2026-09-01', type: 'received_wedding', name: '류미경', relation: '나행병원', amount: 50000 },
-    { id: 'ev-w06', date: '2026-09-01', type: 'received_wedding', name: '정정현', relation: '상헌친구', amount: 150000 },
-    { id: 'ev-w07', date: '2026-09-01', type: 'received_wedding', name: '김진아', relation: '상헌친구', amount: 150000 },
-    { id: 'ev-w08', date: '2026-09-01', type: 'received_wedding', name: '김동하', relation: '나행병원', amount: 50000 },
-    { id: 'ev-w09', date: '2026-09-01', type: 'received_wedding', name: '김대용', relation: '나행병원', amount: 100000 },
-    { id: 'ev-w10', date: '2026-09-01', type: 'received_wedding', name: '박혜진', relation: '나행병원', amount: 100000 },
-    { id: 'ev-w11', date: '2026-09-01', type: 'received_wedding', name: '최진아', relation: '상헌친구', amount: 200000 },
-    { id: 'ev-w12', date: '2026-09-01', type: 'received_wedding', name: '이수현', relation: '나행병원', amount: 150000 },
-    { id: 'ev-w13', date: '2026-09-01', type: 'received_wedding', name: '박효선', relation: '나행병원', amount: 100000 },
-    { id: 'ev-w14', date: '2026-09-01', type: 'received_wedding', name: '김완호', relation: '나행병원', amount: 50000 },
-    { id: 'ev-w15', date: '2026-09-01', type: 'received_wedding', name: '정미화', relation: '나행병원', amount: 50000 },
-    { id: 'ev-w16', date: '2026-09-01', type: 'received_wedding', name: '이연향', relation: '나행병원', amount: 50000 },
-    { id: 'ev-w17', date: '2026-09-01', type: 'received_wedding', name: '이유정', relation: '나행병원', amount: 50000 },
-    { id: 'ev-w18', date: '2026-09-01', type: 'received_wedding', name: '정경란', relation: '나행병원', amount: 100000 },
-    { id: 'ev-w19', date: '2026-09-01', type: 'received_wedding', name: '백명길', relation: '나행병원', amount: 100000 },
-    { id: 'ev-w20', date: '2026-09-01', type: 'received_wedding', name: '김영웅', relation: '상헌친구', amount: 100000 },
-    { id: 'ev-w21', date: '2026-09-01', type: 'received_wedding', name: '염철용', relation: '상헌친구', amount: 100000 },
-    { id: 'ev-w22', date: '2026-09-01', type: 'received_wedding', name: '김보민', relation: '상헌친구', amount: 200000 },
-    { id: 'ev-w23', date: '2026-09-01', type: 'received_wedding', name: '김수호', relation: '상헌친구', amount: 200000 },
-    { id: 'ev-w24', date: '2026-09-01', type: 'received_wedding', name: '심준영부부', relation: '상헌친구', amount: 250000 },
-    { id: 'ev-w25', date: '2026-09-01', type: 'received_wedding', name: '박구봉', relation: '나행병원', amount: 50000 },
-    { id: 'ev-w26', date: '2026-09-01', type: 'received_wedding', name: '이하늘', relation: '나행병원', amount: 150000 },
-    { id: 'ev-w27', date: '2026-09-01', type: 'received_wedding', name: '하정헌', relation: '나행병원', amount: 150000 },
-    { id: 'ev-w28', date: '2026-09-01', type: 'received_wedding', name: '김린아', relation: '상헌친구', amount: 200000 },
-    { id: 'ev-w29', date: '2026-09-01', type: 'received_wedding', name: '김대욱', relation: '나행병원', amount: 50000 },
-    { id: 'ev-w30', date: '2026-09-01', type: 'received_wedding', name: '승덕영', relation: '나행병원', amount: 50000 },
-    { id: 'ev-w31', date: '2026-09-01', type: 'received_wedding', name: '김현태', relation: '나행병원', amount: 50000 },
-    { id: 'ev-w32', date: '2026-09-01', type: 'received_wedding', name: '김성민', relation: '나행병원', amount: 50000 },
-    { id: 'ev-w33', date: '2026-09-01', type: 'received_wedding', name: '김태연', relation: '나행병원', amount: 50000 },
-    { id: 'ev-w34', date: '2026-09-01', type: 'received_wedding', name: '권정은', relation: '나행병원', amount: 50000 },
-    { id: 'ev-w35', date: '2026-09-01', type: 'received_wedding', name: '최지윤', relation: '나행병원', amount: 50000 },
-    { id: 'ev-w36', date: '2026-09-01', type: 'received_wedding', name: '전수은', relation: '나행병원', amount: 50000 },
-    { id: 'ev-w37', date: '2026-09-01', type: 'received_wedding', name: '이순남', relation: '나행병원', amount: 50000 },
-    { id: 'ev-w38', date: '2026-09-01', type: 'received_wedding', name: '고영훈', relation: '상헌친구', amount: 200000 },
-    { id: 'ev-w39', date: '2026-09-01', type: 'received_wedding', name: '오희진', relation: '나행병원', amount: 100000 },
-    { id: 'ev-w40', date: '2026-09-01', type: 'received_wedding', name: '김태완', relation: '나행병원', amount: 100000 },
-    { id: 'ev-w41', date: '2026-09-01', type: 'received_wedding', name: '온준혁', relation: '상헌친구', amount: 200000 },
-    { id: 'ev-w42', date: '2026-09-01', type: 'received_wedding', name: '변여은', relation: '나행병원', amount: 100000 },
-    { id: 'ev-w43', date: '2026-09-01', type: 'received_wedding', name: '정지영', relation: '나행병원', amount: 100000 },
-    { id: 'ev-w44', date: '2026-09-01', type: 'received_wedding', name: '구하랑', relation: '상헌친구', amount: 100000 },
-    { id: 'ev-w45', date: '2026-09-01', type: 'received_wedding', name: '김다연', relation: '상헌친구', amount: 100000 },
-    { id: 'ev-w46', date: '2026-09-01', type: 'received_wedding', name: '이태한', relation: '나행병원', amount: 100000 },
-    { id: 'ev-w47', date: '2026-09-01', type: 'received_wedding', name: '백선미', relation: '나행병원', amount: 300000 },
-    { id: 'ev-w48', date: '2026-09-01', type: 'received_wedding', name: '김희곤', relation: '상헌친구', amount: 100000 },
-    { id: 'ev-w49', date: '2026-09-01', type: 'received_wedding', name: '성일상', relation: '나행병원', amount: 100000 },
-    { id: 'ev-w50', date: '2026-09-01', type: 'received_wedding', name: '김태일', relation: '나행병원', amount: 100000 },
-    { id: 'ev-w51', date: '2026-09-01', type: 'received_wedding', name: '이현지', relation: '나행병원', amount: 100000 }
+    { id: 'ev-w01', date: '2025-11-30', type: 'received_wedding', name: '최성완', relation: '상헌친구', amount: 200000 },
+    { id: 'ev-w02', date: '2025-11-30', type: 'received_wedding', name: '임성환', relation: '상헌친구', amount: 200000 },
+    { id: 'ev-w03', date: '2025-11-30', type: 'received_wedding', name: '표창우', relation: '상헌친구', amount: 300000 },
+    { id: 'ev-w04', date: '2025-11-30', type: 'received_wedding', name: '박대호', relation: '나행병원', amount: 100000 },
+    { id: 'ev-w05', date: '2025-11-30', type: 'received_wedding', name: '류미경', relation: '나행병원', amount: 50000 },
+    { id: 'ev-w06', date: '2025-11-30', type: 'received_wedding', name: '정정현', relation: '상헌친구', amount: 150000 },
+    { id: 'ev-w07', date: '2025-11-30', type: 'received_wedding', name: '김진아', relation: '상헌친구', amount: 150000 },
+    { id: 'ev-w08', date: '2025-11-30', type: 'received_wedding', name: '김동하', relation: '나행병원', amount: 50000 },
+    { id: 'ev-w09', date: '2025-11-30', type: 'received_wedding', name: '김대용', relation: '나행병원', amount: 100000 },
+    { id: 'ev-w10', date: '2025-11-30', type: 'received_wedding', name: '박혜진', relation: '나행병원', amount: 100000 },
+    { id: 'ev-w11', date: '2025-11-30', type: 'received_wedding', name: '최진아', relation: '상헌친구', amount: 200000 },
+    { id: 'ev-w12', date: '2025-11-30', type: 'received_wedding', name: '이수현', relation: '나행병원', amount: 150000 },
+    { id: 'ev-w13', date: '2025-11-30', type: 'received_wedding', name: '박효선', relation: '나행병원', amount: 100000 },
+    { id: 'ev-w14', date: '2025-11-30', type: 'received_wedding', name: '김완호', relation: '나행병원', amount: 50000 },
+    { id: 'ev-w15', date: '2025-11-30', type: 'received_wedding', name: '정미화', relation: '나행병원', amount: 50000 },
+    { id: 'ev-w16', date: '2025-11-30', type: 'received_wedding', name: '이연향', relation: '나행병원', amount: 50000 },
+    { id: 'ev-w17', date: '2025-11-30', type: 'received_wedding', name: '이유정', relation: '나행병원', amount: 50000 },
+    { id: 'ev-w18', date: '2025-11-30', type: 'received_wedding', name: '정경란', relation: '나행병원', amount: 100000 },
+    { id: 'ev-w19', date: '2025-11-30', type: 'received_wedding', name: '백명길', relation: '나행병원', amount: 100000 },
+    { id: 'ev-w20', date: '2025-11-30', type: 'received_wedding', name: '김영웅', relation: '상헌친구', amount: 100000 },
+    { id: 'ev-w21', date: '2025-11-30', type: 'received_wedding', name: '염철용', relation: '상헌친구', amount: 100000 },
+    { id: 'ev-w22', date: '2025-11-30', type: 'received_wedding', name: '김보민', relation: '상헌친구', amount: 200000 },
+    { id: 'ev-w23', date: '2025-11-30', type: 'received_wedding', name: '김수호', relation: '상헌친구', amount: 200000 },
+    { id: 'ev-w24', date: '2025-11-30', type: 'received_wedding', name: '심준영부부', relation: '상헌친구', amount: 250000 },
+    { id: 'ev-w25', date: '2025-11-30', type: 'received_wedding', name: '박구봉', relation: '나행병원', amount: 50000 },
+    { id: 'ev-w26', date: '2025-11-30', type: 'received_wedding', name: '이하늘', relation: '나행병원', amount: 150000 },
+    { id: 'ev-w27', date: '2025-11-30', type: 'received_wedding', name: '하정헌', relation: '나행병원', amount: 150000 },
+    { id: 'ev-w28', date: '2025-11-30', type: 'received_wedding', name: '김린아', relation: '상헌친구', amount: 200000 },
+    { id: 'ev-w29', date: '2025-11-30', type: 'received_wedding', name: '김대욱', relation: '나행병원', amount: 50000 },
+    { id: 'ev-w30', date: '2025-11-30', type: 'received_wedding', name: '승덕영', relation: '나행병원', amount: 50000 },
+    { id: 'ev-w31', date: '2025-11-30', type: 'received_wedding', name: '김현태', relation: '나행병원', amount: 50000 },
+    { id: 'ev-w32', date: '2025-11-30', type: 'received_wedding', name: '김성민', relation: '나행병원', amount: 50000 },
+    { id: 'ev-w33', date: '2025-11-30', type: 'received_wedding', name: '김태연', relation: '나행병원', amount: 50000 },
+    { id: 'ev-w34', date: '2025-11-30', type: 'received_wedding', name: '권정은', relation: '나행병원', amount: 50000 },
+    { id: 'ev-w35', date: '2025-11-30', type: 'received_wedding', name: '최지윤', relation: '나행병원', amount: 50000 },
+    { id: 'ev-w36', date: '2025-11-30', type: 'received_wedding', name: '전수은', relation: '나행병원', amount: 50000 },
+    { id: 'ev-w37', date: '2025-11-30', type: 'received_wedding', name: '이순남', relation: '나행병원', amount: 50000 },
+    { id: 'ev-w38', date: '2025-11-30', type: 'received_wedding', name: '고영훈', relation: '상헌친구', amount: 200000 },
+    { id: 'ev-w39', date: '2025-11-30', type: 'received_wedding', name: '오희진', relation: '나행병원', amount: 100000 },
+    { id: 'ev-w40', date: '2025-11-30', type: 'received_wedding', name: '김태완', relation: '나행병원', amount: 100000 },
+    { id: 'ev-w41', date: '2025-11-30', type: 'received_wedding', name: '온준혁', relation: '상헌친구', amount: 200000 },
+    { id: 'ev-w42', date: '2025-11-30', type: 'received_wedding', name: '변여은', relation: '나행병원', amount: 100000 },
+    { id: 'ev-w43', date: '2025-11-30', type: 'received_wedding', name: '정지영', relation: '나행병원', amount: 100000 },
+    { id: 'ev-w44', date: '2025-11-30', type: 'received_wedding', name: '구하랑', relation: '상헌친구', amount: 100000 },
+    { id: 'ev-w45', date: '2025-11-30', type: 'received_wedding', name: '김다연', relation: '상헌친구', amount: 100000 },
+    { id: 'ev-w46', date: '2025-11-30', type: 'received_wedding', name: '이태한', relation: '나행병원', amount: 100000 },
+    { id: 'ev-w47', date: '2025-11-30', type: 'received_wedding', name: '백선미', relation: '나행병원', amount: 300000 },
+    { id: 'ev-w48', date: '2025-11-30', type: 'received_wedding', name: '김희곤', relation: '상헌친구', amount: 100000 },
+    { id: 'ev-w49', date: '2025-11-30', type: 'received_wedding', name: '성일상', relation: '나행병원', amount: 100000 },
+    { id: 'ev-w50', date: '2025-11-30', type: 'received_wedding', name: '김태일', relation: '나행병원', amount: 100000 },
+    { id: 'ev-w51', date: '2025-11-30', type: 'received_wedding', name: '이현지', relation: '나행병원', amount: 100000 }
   ],
   
   budgets: {
@@ -706,7 +706,7 @@ function setupEventListeners() {
     });
   });
 
-  // Events Form & Search Listeners
+  // Events Form & Search & Edit Listeners
   const eventForm = document.getElementById('eventRecordForm');
   if (eventForm) {
     eventForm.addEventListener('submit', handleAddEventRecord);
@@ -720,6 +720,18 @@ function setupEventListeners() {
   const eventFilterType = document.getElementById('eventFilterType');
   if (eventFilterType) {
     eventFilterType.addEventListener('change', renderEventsTab);
+  }
+
+  const closeEditEvBtn = document.getElementById('closeEditEventModalBtn');
+  if (closeEditEvBtn) {
+    closeEditEvBtn.addEventListener('click', () => {
+      document.getElementById('editEventModal').classList.add('hidden');
+    });
+  }
+
+  const editEvForm = document.getElementById('editEventForm');
+  if (editEvForm) {
+    editEvForm.addEventListener('submit', handleSaveEditEvent);
   }
 
   // Google Drive Cloud Backup Modal
@@ -1841,6 +1853,7 @@ function renderEventsTab() {
         ${isOut ? '-' : '+'}${Number(ev.amount).toLocaleString()} 원
       </td>
       <td style="padding: 10px 12px; text-align: center;">
+        <button class="action-icon-btn" onclick="editEventRecord('${ev.id}')" title="수정" style="margin-right: 4px;">✏️</button>
         <button class="action-icon-btn" onclick="deleteEventRecord('${ev.id}')" title="삭제">🗑️</button>
       </td>
     `;
@@ -1880,6 +1893,51 @@ function handleAddEventRecord() {
 
   renderEventsTab();
   alert(`💌 '${name}' 님 경조사 내역이 장부에 성공적으로 등록되었습니다!`);
+}
+
+window.editEventRecord = function(id) {
+  const ev = (state.familyEvents || []).find(e => String(e.id) === String(id));
+  if (!ev) return;
+
+  document.getElementById('editEventId').value = ev.id;
+  document.getElementById('editEventDate').value = ev.date;
+  document.getElementById('editEventType').value = ev.type;
+  document.getElementById('editEventName').value = ev.name;
+  document.getElementById('editEventRelation').value = ev.relation || '';
+  document.getElementById('editEventAmount').value = ev.amount;
+
+  document.getElementById('editEventModal').classList.remove('hidden');
+};
+
+function handleSaveEditEvent() {
+  const id = document.getElementById('editEventId').value;
+  const date = document.getElementById('editEventDate').value;
+  const type = document.getElementById('editEventType').value;
+  const name = document.getElementById('editEventName').value.trim();
+  const relation = document.getElementById('editEventRelation').value.trim();
+  const amount = parseInt(document.getElementById('editEventAmount').value, 10);
+
+  if (!id || !date || !name || !amount || amount <= 0) {
+    alert('올바른 수정 항목을 입력해 주세요.');
+    return;
+  }
+
+  const idx = (state.familyEvents || []).findIndex(e => String(e.id) === String(id));
+  if (idx !== -1) {
+    state.familyEvents[idx] = {
+      ...state.familyEvents[idx],
+      date,
+      type,
+      name,
+      relation,
+      amount
+    };
+
+    pushDataToFirebase();
+    renderEventsTab();
+    document.getElementById('editEventModal').classList.add('hidden');
+    alert(`✏️ '${name}' 님의 경조사 내역이 수정되었습니다.`);
+  }
 }
 
 window.deleteEventRecord = function(id) {

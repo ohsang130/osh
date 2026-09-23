@@ -479,6 +479,48 @@
     </div>
   </div>
 
+  <!-- Modal for Editing Family Event Record -->
+  <div id="editEventModal" class="modal-overlay hidden">
+    <div class="modal-card" style="max-width: 440px;">
+      <div class="modal-header">
+        <h3>✏️ 경조사 내역 수정</h3>
+        <button class="modal-close-btn" id="closeEditEventModalBtn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="editEventForm" onsubmit="return false;">
+          <input type="hidden" id="editEventId">
+          <div class="form-group">
+            <label for="editEventDate">날짜</label>
+            <input type="date" id="editEventDate" required style="padding: 8px; font-size: 13px; border-radius: 6px; border: 1px solid var(--border-color); width: 100%;">
+          </div>
+          <div class="form-group">
+            <label for="editEventType">경조사 구분</label>
+            <select id="editEventType" required style="padding: 8px; font-size: 13px; border-radius: 6px; border: 1px solid var(--border-color); width: 100%;">
+              <option value="sent_wedding">💌 보낸 축의금</option>
+              <option value="received_wedding">🎁 받은 축의금</option>
+              <option value="sent_condolence">🙏 보낸 부의금</option>
+              <option value="received_condolence">🤍 받은 부의금</option>
+              <option value="other">🎉 기타 경조사(돌잔치 등)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="editEventName">이름 (대상)</label>
+            <input type="text" id="editEventName" required style="padding: 8px; font-size: 13px; border-radius: 6px; border: 1px solid var(--border-color); width: 100%;">
+          </div>
+          <div class="form-group">
+            <label for="editEventRelation">관계 및 메모</label>
+            <input type="text" id="editEventRelation" style="padding: 8px; font-size: 13px; border-radius: 6px; border: 1px solid var(--border-color); width: 100%;">
+          </div>
+          <div class="form-group">
+            <label for="editEventAmount">금액 (원)</label>
+            <input type="number" id="editEventAmount" required style="padding: 8px; font-size: 13px; border-radius: 6px; border: 1px solid var(--border-color); width: 100%;">
+          </div>
+          <button type="submit" id="saveEditEventBtn" class="submit-btn" style="margin-top: 10px;">변경사항 저장</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <input type="file" id="restoreFileInput" accept=".json" style="display: none;">
 
   <script src="app.js"></script>
