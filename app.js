@@ -14,10 +14,12 @@ if (!firebase.apps.length) {
 }
 const db = firebase.database();
 
+const now = new Date();
+
 // Global State
 const state = {
-  currentYear: 2026,
-  currentMonth: 8,
+  currentYear: now.getFullYear(),
+  currentMonth: now.getMonth() + 1,
   type: 'expense',
   selectedPayMethod: '현대카드',
   selectedCategory: '식비',
@@ -514,6 +516,10 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function loadStoredData() {
+  const today = new Date();
+  state.currentYear = today.getFullYear();
+  state.currentMonth = today.getMonth() + 1;
+
   // Always enforce the shared room code 'myhouse-main-room'
   state.roomCode = 'myhouse-main-room';
   
@@ -535,7 +541,10 @@ function loadStoredData() {
   const currentTheme = localStorage.getItem('couple_budget_theme') || 'light';
   document.documentElement.setAttribute('data-theme', currentTheme);
 
-  document.getElementById('txDate').value = new Date().toISOString().split('T')[0];
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, '0');
+  const dd = String(today.getDate()).padStart(2, '0');
+  document.getElementById('txDate').value = `${yyyy}-${mm}-${dd}`;
 }
 
 // Instant Realtime Sync Setup with Firebase
@@ -670,6 +679,8 @@ function setupEventListeners() {
 
   document.getElementById('filterPayMethod').addEventListener('change', (e) => {
     state.activePayFilter = e.target.value;
+    state.activeCategoryFilter = 'ALL';
+    renderFilterOptions();
     renderTransactionList();
   });
 
@@ -682,9 +693,8 @@ function setupEventListeners() {
     state.activePayFilter = 'ALL';
     state.activeCategoryFilter = 'ALL';
     state.searchQuery = '';
-    document.getElementById('filterPayMethod').value = 'ALL';
-    document.getElementById('filterCategory').value = 'ALL';
     document.getElementById('searchInput').value = '';
+    renderFilterOptions();
     renderTransactionList();
   });
 
@@ -918,18 +928,44 @@ function renderFilterOptions() {
     if (state.activePayFilter === pm) opt.selected = true;
     paySelect.appendChild(opt);
   });
+  paySelect.value = state.activePayFilter;
 
   const catSelect = document.getElementById('filterCategory');
   catSelect.innerHTML = '<option value="ALL">전체 카테고리</option>';
   
+  const monthTxs = getCurrentMonthTransactions();
   let targetCats = [];
-  if (state.activeTypeFilter === 'income') {
-    targetCats = state.incomeCategories;
-  } else if (state.activeTypeFilter === 'expense') {
-    targetCats = state.categories;
+
+  if (state.activePayFilter !== 'ALL') {
+    // 특정 결제수단이 선택된 경우: 이번 달 해당 결제수단으로 결제된 내역에 존재하는 카테고리만 추출!
+    const usedCatsInPay = new Set();
+    monthTxs.forEach(tx => {
+      const matchType = (state.activeTypeFilter === 'ALL' || tx.type === state.activeTypeFilter);
+      if (matchType && tx.payMethod === state.activePayFilter && tx.category) {
+        usedCatsInPay.add(tx.category);
+      }
+    });
+
+    const masterOrder = [...state.categories, ...state.incomeCategories];
+    targetCats = masterOrder.filter(c => usedCatsInPay.has(c));
+    usedCatsInPay.forEach(c => {
+      if (!targetCats.includes(c)) targetCats.push(c);
+    });
   } else {
-    // Unique list of both income and expense categories
-    targetCats = Array.from(new Set([...state.incomeCategories, ...state.categories]));
+    // 전체 결제수단일 때
+    if (state.activeTypeFilter === 'income') {
+      targetCats = state.incomeCategories;
+    } else if (state.activeTypeFilter === 'expense') {
+      targetCats = state.categories;
+    } else {
+      // Unique list of both income and expense categories
+      targetCats = Array.from(new Set([...state.categories, ...state.incomeCategories]));
+    }
+  }
+
+  // 현재 선택된 카테고리 필터가 목록에 없다면 'ALL'로 안전하게 초기화
+  if (state.activeCategoryFilter !== 'ALL' && !targetCats.includes(state.activeCategoryFilter)) {
+    state.activeCategoryFilter = 'ALL';
   }
 
   targetCats.forEach(cat => {
@@ -939,6 +975,7 @@ function renderFilterOptions() {
     if (state.activeCategoryFilter === cat) opt.selected = true;
     catSelect.appendChild(opt);
   });
+  catSelect.value = state.activeCategoryFilter;
 }
 
 function getCurrentMonthTransactions() {
@@ -1091,7 +1128,8 @@ function renderTransactionList() {
     chip.innerHTML = `💳 ${pm} <span style="font-weight:800;">${total.toLocaleString()} 원</span>`;
     chip.addEventListener('click', () => {
       state.activePayFilter = state.activePayFilter === pm ? 'ALL' : pm;
-      document.getElementById('filterPayMethod').value = state.activePayFilter;
+      state.activeCategoryFilter = 'ALL';
+      renderFilterOptions();
       renderTransactionList();
     });
     paySummaryChipsContainer.appendChild(chip);
