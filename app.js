@@ -825,9 +825,19 @@ function setupEventListeners() {
     });
   }
 
-  // Save Budgets & Monthly Memo
+  // Save Budgets & Monthly Memo & Budget Add/Copy
   document.getElementById('saveBudgetsBtn').addEventListener('click', saveBudgets);
   document.getElementById('saveMonthlyMemoBtn').addEventListener('click', saveMonthlyMemo);
+
+  const addBudgetBtn = document.getElementById('addBudgetCatBtn');
+  if (addBudgetBtn) {
+    addBudgetBtn.addEventListener('click', handleAddBudgetCategory);
+  }
+
+  const copyBudgetBtn = document.getElementById('copyPrevBudgetBtn');
+  if (copyBudgetBtn) {
+    copyBudgetBtn.addEventListener('click', copyPrevMonthBudget);
+  }
 }
 
 // Master Render Function
@@ -990,18 +1000,27 @@ function getMonthBudgets(year, month) {
   const monthKey = `${year}-${String(month).padStart(2, '0')}`;
   if (!state.budgets) state.budgets = {};
   
-  // If state.budgets is structured per month { '2026-08': { '식비': 300000 }, ... }
+  // If state.budgets has this month key
   if (state.budgets[monthKey]) {
     return state.budgets[monthKey];
   }
-  
+
   // Backward compatibility: If state.budgets was flat object { '식비': 300000 }, fallback
   const isFlat = Object.keys(state.budgets).some(k => !k.includes('-'));
   if (isFlat) {
     return state.budgets;
   }
 
-  return {};
+  // 새로 시작하는 월이거나 아직 생성되지 않은 월인 경우:
+  // 기본 핵심 예산 항목(7개)으로 초기화하여 불필요한 30여 개 항목이 뜨지 않도록 함
+  const defaultBudgetCats = ['식비', '생활비', '관리비', '가스비', '유류비', '하이패스', '학식'];
+  const initialBudgetObj = {};
+  defaultBudgetCats.forEach(cat => {
+    initialBudgetObj[cat] = (state.budgets['2026-08'] && state.budgets['2026-08'][cat]) || 0;
+  });
+
+  state.budgets[monthKey] = initialBudgetObj;
+  return state.budgets[monthKey];
 }
 
 function renderSummaryCards() {
@@ -1032,12 +1051,26 @@ function renderSummaryCards() {
 
 function renderBudgets() {
   const container = document.getElementById('budgetList');
+  if (!container) return;
   container.innerHTML = '';
 
   const monthTxs = getCurrentMonthTransactions().filter(t => t.type === 'expense');
   const currentMonthBudget = getMonthBudgets(state.currentYear, state.currentMonth);
+  const activeBudgetCats = Object.keys(currentMonthBudget);
 
-  state.categories.forEach((cat, idx) => {
+  // 상단 "+ 예산 항목 추가" 드롭다운 옵션 갱신
+  populateAddBudgetCatDropdown(activeBudgetCats);
+
+  if (activeBudgetCats.length === 0) {
+    container.innerHTML = `
+      <div style="text-align:center; padding:40px; color:var(--text-muted); background:var(--bg-card-subtle); border-radius:var(--radius-md); border:1px dashed var(--border-color); margin-top:10px;">
+        설정된 예산 항목이 없습니다.<br>위의 <b>[+ 예산 항목 추가]</b>에서 원하는 항목을 골라 예산에 넣어보세요!
+      </div>
+    `;
+    return;
+  }
+
+  activeBudgetCats.forEach((cat, idx) => {
     const targetBudget = Number(currentMonthBudget[cat]) || 0;
     const actualExpense = monthTxs.filter(t => t.category === cat).reduce((sum, t) => sum + Number(t.amount), 0);
     const remaining = targetBudget - actualExpense;
@@ -1050,8 +1083,8 @@ function renderBudgets() {
       <div class="budget-item-top">
         <div class="budget-cat-title" style="display:flex; align-items:center; gap:8px;">
           <div class="reorder-btns" style="display:flex; gap:2px;">
-            <button type="button" class="action-icon-btn" onclick="moveCategoryBudget(${idx}, -1)" ${idx === 0 ? 'disabled style="opacity:0.2;"' : ''} title="위로 이동" style="padding:2px 6px; font-size:11px;">▲</button>
-            <button type="button" class="action-icon-btn" onclick="moveCategoryBudget(${idx}, 1)" ${idx === state.categories.length - 1 ? 'disabled style="opacity:0.2;"' : ''} title="아래로 이동" style="padding:2px 6px; font-size:11px;">▼</button>
+            <button type="button" class="action-icon-btn" onclick="moveBudgetCategory(${idx}, -1)" ${idx === 0 ? 'disabled style="opacity:0.2;"' : ''} title="위로 이동" style="padding:2px 6px; font-size:11px;">▲</button>
+            <button type="button" class="action-icon-btn" onclick="moveBudgetCategory(${idx}, 1)" ${idx === activeBudgetCats.length - 1 ? 'disabled style="opacity:0.2;"' : ''} title="아래로 이동" style="padding:2px 6px; font-size:11px;">▼</button>
           </div>
           <span>${getCategoryEmoji(cat)} ${cat}</span>
           ${targetBudget > 0 ? (
@@ -1060,10 +1093,11 @@ function renderBudgets() {
               : `<span class="badge" style="background:#ecfdf5; color:#10b981; margin-left:4px; font-weight:700;">💵 남은 예산: ${remaining.toLocaleString()}원</span>`
           ) : ''}
         </div>
-        <div class="budget-inputs">
+        <div class="budget-inputs" style="display:flex; align-items:center; gap:6px;">
           <span style="font-size:12px; color:var(--text-secondary);">지출: <b>${actualExpense.toLocaleString()} 원</b> /</span>
           <label style="font-size:12px;">목표 예산:</label>
-          <input type="number" class="budget-input-field" data-cat="${cat}" value="${targetBudget}" placeholder="0"> 원
+          <input type="number" class="budget-input-field" data-cat="${cat}" value="${targetBudget}" placeholder="0" style="width:100px;"> 원
+          <button type="button" class="action-icon-btn" onclick="removeBudgetCategory('${cat}')" title="이 달의 예산에서 제외/삭제" style="margin-left:6px; color:#ef4444;">🗑️</button>
         </div>
       </div>
       <div class="progress-bar-bg">
@@ -1074,18 +1108,135 @@ function renderBudgets() {
   });
 }
 
-window.moveCategoryBudget = function(idx, direction) {
-  const targetIdx = idx + direction;
-  if (targetIdx < 0 || targetIdx >= state.categories.length) return;
+function populateAddBudgetCatDropdown(activeBudgetCats) {
+  const select = document.getElementById('addBudgetCatSelect');
+  const addBtn = document.getElementById('addBudgetCatBtn');
+  if (!select) return;
+  select.innerHTML = '';
 
-  // Swap category position
-  const temp = state.categories[idx];
-  state.categories[idx] = state.categories[targetIdx];
-  state.categories[targetIdx] = temp;
+  const activeSet = new Set(activeBudgetCats);
+  const availableCats = state.categories.filter(c => !activeSet.has(c));
+
+  if (availableCats.length === 0) {
+    select.innerHTML = '<option value="">모든 항목이 추가되어 있습니다</option>';
+    select.disabled = true;
+    if (addBtn) addBtn.disabled = true;
+    return;
+  }
+
+  select.disabled = false;
+  if (addBtn) addBtn.disabled = false;
+
+  availableCats.forEach(cat => {
+    const opt = document.createElement('option');
+    opt.value = cat;
+    opt.textContent = `${getCategoryEmoji(cat)} ${cat}`;
+    select.appendChild(opt);
+  });
+}
+
+function handleAddBudgetCategory() {
+  const select = document.getElementById('addBudgetCatSelect');
+  if (!select || !select.value) return;
+
+  const newCat = select.value;
+  const monthKey = `${state.currentYear}-${String(state.currentMonth).padStart(2, '0')}`;
+  if (!state.budgets[monthKey]) state.budgets[monthKey] = {};
+
+  // 현재 입력창에 수정 중인 금액들 먼저 state에 반영
+  document.querySelectorAll('.budget-input-field').forEach(inp => {
+    const cat = inp.dataset.cat;
+    state.budgets[monthKey][cat] = parseInt(inp.value, 10) || 0;
+  });
+
+  // 새 항목 추가 (기본 0원)
+  state.budgets[monthKey][newCat] = 0;
 
   pushDataToFirebase();
-  renderApp();
+  renderBudgets();
+  renderSummaryCards();
+}
+
+window.removeBudgetCategory = function(cat) {
+  const monthKey = `${state.currentYear}-${String(state.currentMonth).padStart(2, '0')}`;
+  if (!state.budgets[monthKey]) return;
+
+  // 현재 입력창에 수정 중인 금액들 먼저 state에 반영
+  document.querySelectorAll('.budget-input-field').forEach(inp => {
+    const c = inp.dataset.cat;
+    if (c !== cat) {
+      state.budgets[monthKey][c] = parseInt(inp.value, 10) || 0;
+    }
+  });
+
+  delete state.budgets[monthKey][cat];
+
+  pushDataToFirebase();
+  renderBudgets();
+  renderSummaryCards();
 };
+
+window.moveBudgetCategory = function(idx, direction) {
+  const monthKey = `${state.currentYear}-${String(state.currentMonth).padStart(2, '0')}`;
+  if (!state.budgets[monthKey]) return;
+
+  // 현재 입력창에 수정 중인 금액들 먼저 state에 반영
+  document.querySelectorAll('.budget-input-field').forEach(inp => {
+    const c = inp.dataset.cat;
+    state.budgets[monthKey][c] = parseInt(inp.value, 10) || 0;
+  });
+
+  const budgetObj = state.budgets[monthKey];
+  const keys = Object.keys(budgetObj);
+  const targetIdx = idx + direction;
+  if (targetIdx < 0 || targetIdx >= keys.length) return;
+
+  // Swap position
+  const temp = keys[idx];
+  keys[idx] = keys[targetIdx];
+  keys[targetIdx] = temp;
+
+  const newObj = {};
+  keys.forEach(k => {
+    newObj[k] = budgetObj[k];
+  });
+  state.budgets[monthKey] = newObj;
+
+  pushDataToFirebase();
+  renderBudgets();
+};
+
+// 하위 호환성 유지
+window.moveCategoryBudget = window.moveBudgetCategory;
+
+function copyPrevMonthBudget() {
+  let prevYear = state.currentYear;
+  let prevMonth = state.currentMonth - 1;
+  if (prevMonth < 1) {
+    prevMonth = 12;
+    prevYear--;
+  }
+
+  const prevMonthKey = `${prevYear}-${String(prevMonth).padStart(2, '0')}`;
+  const prevBudgets = state.budgets && state.budgets[prevMonthKey];
+
+  if (!prevBudgets || Object.keys(prevBudgets).length === 0) {
+    alert(`이전 달(${prevYear}년 ${prevMonth}월)에 저장된 예산 데이터가 없습니다.`);
+    return;
+  }
+
+  if (!confirm(`이전 달(${prevYear}년 ${prevMonth}월)의 예산 항목과 목표 금액을 이번 달(${state.currentMonth}월)로 그대로 복사하시겠습니까?`)) {
+    return;
+  }
+
+  const curMonthKey = `${state.currentYear}-${String(state.currentMonth).padStart(2, '0')}`;
+  state.budgets[curMonthKey] = { ...prevBudgets };
+
+  pushDataToFirebase();
+  renderBudgets();
+  renderSummaryCards();
+  alert(`📋 ${prevMonth}월의 예산 설정이 이번 달로 성공적으로 복사되었습니다!`);
+}
 
 function saveBudgets() {
   const monthKey = `${state.currentYear}-${String(state.currentMonth).padStart(2, '0')}`;
@@ -1100,11 +1251,13 @@ function saveBudgets() {
     state.budgets[monthKey] = {};
   }
 
+  const currentObj = {};
   document.querySelectorAll('.budget-input-field').forEach(inp => {
     const cat = inp.dataset.cat;
     const val = parseInt(inp.value, 10) || 0;
-    state.budgets[monthKey][cat] = val;
+    currentObj[cat] = val;
   });
+  state.budgets[monthKey] = currentObj;
 
   pushDataToFirebase();
   alert(`${state.currentYear}년 ${state.currentMonth}월 카테고리별 목표 예산이 저장되었습니다!`);
