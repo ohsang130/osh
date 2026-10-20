@@ -114,6 +114,9 @@ const state = {
       '상헌교통비': 20000
     }
   },
+  budgetOrders: {
+    '2026-08': ['식비', '생활비', '관리비', '가스비', '유류비', '하이패스', '상헌교통비']
+  },
   memos: {},
 
   transactions: []
@@ -538,6 +541,10 @@ function loadStoredData() {
   const savedBudgets = localStorage.getItem('couple_budget_budgets');
   if (savedBudgets) state.budgets = JSON.parse(savedBudgets);
 
+  const savedBudgetOrders = localStorage.getItem('couple_budget_budget_orders');
+  if (savedBudgetOrders) state.budgetOrders = JSON.parse(savedBudgetOrders);
+  else if (!state.budgetOrders) state.budgetOrders = {};
+
   const currentTheme = localStorage.getItem('couple_budget_theme') || 'light';
   document.documentElement.setAttribute('data-theme', currentTheme);
 
@@ -567,6 +574,7 @@ function initFirebaseSync() {
     }
     
     if (val && val.budgets) state.budgets = val.budgets;
+    if (val && val.budgetOrders) state.budgetOrders = val.budgetOrders;
     if (val && val.payMethods) state.payMethods = val.payMethods;
     if (val && val.categories) state.categories = val.categories;
     if (val && val.incomeCategories) state.incomeCategories = val.incomeCategories;
@@ -588,6 +596,7 @@ function pushDataToFirebase() {
     roomRef.set({
       transactions: state.transactions,
       budgets: state.budgets,
+      budgetOrders: state.budgetOrders || {},
       payMethods: state.payMethods,
       categories: state.categories,
       incomeCategories: state.incomeCategories,
@@ -633,6 +642,12 @@ function setupEventListeners() {
     document.getElementById('typeExpenseBtn').classList.add('active');
     document.getElementById('typeIncomeBtn').classList.remove('active');
     state.selectedCategory = state.categories[0] || '식비';
+    categoryFilterQuery = '';
+    const catInput = document.getElementById('categoryFilterInput');
+    const clearBtn = document.getElementById('clearCatFilterBtn');
+    if (catInput) catInput.value = '';
+    if (clearBtn) clearBtn.style.display = 'none';
+    renderPayMethodChips();
     renderCategoryChips();
   });
 
@@ -641,7 +656,12 @@ function setupEventListeners() {
     document.getElementById('typeIncomeBtn').classList.add('active');
     document.getElementById('typeExpenseBtn').classList.remove('active');
     state.selectedCategory = state.incomeCategories[0] || '급여';
-    state.selectedPayMethod = '현금';
+    state.selectedPayMethod = state.payMethods.find(p => p.includes('통장') || p.includes('현금')) || state.payMethods[0] || '통장입금';
+    categoryFilterQuery = '';
+    const catInput = document.getElementById('categoryFilterInput');
+    const clearBtn = document.getElementById('clearCatFilterBtn');
+    if (catInput) catInput.value = '';
+    if (clearBtn) clearBtn.style.display = 'none';
     renderPayMethodChips();
     renderCategoryChips();
   });
@@ -697,6 +717,30 @@ function setupEventListeners() {
     renderFilterOptions();
     renderTransactionList();
   });
+
+  // Category Quick Search Input
+  const catFilterInput = document.getElementById('categoryFilterInput');
+  const clearCatBtn = document.getElementById('clearCatFilterBtn');
+  if (catFilterInput) {
+    catFilterInput.addEventListener('input', (e) => {
+      categoryFilterQuery = e.target.value;
+      if (clearCatBtn) {
+        clearCatBtn.style.display = categoryFilterQuery ? 'block' : 'none';
+      }
+      renderCategoryChips();
+    });
+  }
+  if (clearCatBtn) {
+    clearCatBtn.addEventListener('click', () => {
+      categoryFilterQuery = '';
+      if (catFilterInput) {
+        catFilterInput.value = '';
+        catFilterInput.focus();
+      }
+      clearCatBtn.style.display = 'none';
+      renderCategoryChips();
+    });
+  }
 
   // Navigation Tabs
   document.querySelectorAll('.view-tab-btn').forEach(tabBtn => {
@@ -895,13 +939,52 @@ function saveMonthlyMemo() {
   alert(`${state.currentYear}년 ${state.currentMonth}월 메모가 양쪽 2칸 모두 안전하게 저장되었습니다!`);
 }
 
+function getPayMethodIcon(pm) {
+  if (!pm) return '💳';
+  if (pm.includes('동백')) return '🌺';
+  if (pm.includes('네이버')) return '🟢';
+  if (pm.includes('포인트')) return '🅿️';
+  if (pm.includes('현금')) return '💵';
+  if (pm.includes('통장') || pm.includes('계좌') || pm.includes('입금') || pm.includes('이체')) return '🏦';
+  if (pm.includes('쿠팡')) return '📦';
+  if (pm.includes('카카오')) return '🟡';
+  if (pm.includes('토스')) return '🔵';
+  if (pm.includes('페이')) return '📱';
+  if (pm.includes('카드')) return '💳';
+  return '💳';
+}
+
+let categoryFilterQuery = '';
+
 function renderPayMethodChips() {
   const container = document.getElementById('payMethodChips');
+  if (!container) return;
   container.innerHTML = '';
+
+  const payLabel = document.getElementById('payMethodLabel');
+  if (payLabel) {
+    payLabel.textContent = state.type === 'income' ? '입금 / 수령 수단' : '결제 수단';
+  }
+
+  // Ensure a valid payment method is selected
+  if (!state.selectedPayMethod || !state.payMethods.includes(state.selectedPayMethod)) {
+    if (state.type === 'income') {
+      state.selectedPayMethod = state.payMethods.find(p => p.includes('통장') || p.includes('현금')) || state.payMethods[0] || '통장입금';
+    } else {
+      state.selectedPayMethod = state.payMethods[0] || '현대카드';
+    }
+  }
+
   state.payMethods.forEach(pm => {
+    const isSelected = state.selectedPayMethod === pm;
     const chip = document.createElement('div');
-    chip.className = `chip-tag ${state.selectedPayMethod === pm ? 'selected' : ''}`;
-    chip.textContent = pm;
+    chip.className = `chip-tag ${isSelected ? 'selected' : ''}`;
+    const icon = getPayMethodIcon(pm);
+    chip.innerHTML = `
+      <span class="chip-icon">${icon}</span>
+      <span class="chip-label">${pm}</span>
+      ${isSelected ? '<span class="chip-check">✓</span>' : ''}
+    `;
     chip.addEventListener('click', () => {
       state.selectedPayMethod = pm;
       renderPayMethodChips();
@@ -912,14 +995,32 @@ function renderPayMethodChips() {
 
 function renderCategoryChips() {
   const container = document.getElementById('categoryChips');
+  if (!container) return;
   container.innerHTML = '';
   
   const currentCategoryList = state.type === 'income' ? state.incomeCategories : state.categories;
+  const filteredList = categoryFilterQuery.trim()
+    ? currentCategoryList.filter(cat => cat.toLowerCase().includes(categoryFilterQuery.trim().toLowerCase()))
+    : currentCategoryList;
 
-  currentCategoryList.forEach(cat => {
+  if (filteredList.length === 0) {
+    const emptyDiv = document.createElement('div');
+    emptyDiv.className = 'chip-empty-msg';
+    emptyDiv.textContent = `"${categoryFilterQuery}" 관련 카테고리가 없습니다`;
+    container.appendChild(emptyDiv);
+    return;
+  }
+
+  filteredList.forEach(cat => {
+    const isSelected = state.selectedCategory === cat;
     const chip = document.createElement('div');
-    chip.className = `chip-tag ${state.selectedCategory === cat ? 'selected' : ''}`;
-    chip.textContent = cat;
+    chip.className = `chip-tag ${isSelected ? 'selected' : ''}`;
+    const emoji = getCategoryEmoji(cat);
+    chip.innerHTML = `
+      <span class="chip-icon">${emoji}</span>
+      <span class="chip-label">${cat}</span>
+      ${isSelected ? '<span class="chip-check">✓</span>' : ''}
+    `;
     chip.addEventListener('click', () => {
       state.selectedCategory = cat;
       renderCategoryChips();
@@ -1020,7 +1121,24 @@ function getMonthBudgets(year, month) {
   });
 
   state.budgets[monthKey] = initialBudgetObj;
+  if (!state.budgetOrders) state.budgetOrders = {};
+  if (!state.budgetOrders[monthKey]) {
+    state.budgetOrders[monthKey] = [...defaultBudgetCats];
+  }
   return state.budgets[monthKey];
+}
+
+function getActiveBudgetCategories(monthKey) {
+  const currentMonthBudget = getMonthBudgets(state.currentYear, state.currentMonth);
+  const budgetKeys = Object.keys(currentMonthBudget);
+
+  if (state.budgetOrders && state.budgetOrders[monthKey] && Array.isArray(state.budgetOrders[monthKey])) {
+    const savedOrder = state.budgetOrders[monthKey].filter(k => budgetKeys.includes(k));
+    const missingKeys = budgetKeys.filter(k => !savedOrder.includes(k));
+    return [...savedOrder, ...missingKeys];
+  }
+
+  return budgetKeys;
 }
 
 function renderSummaryCards() {
@@ -1055,8 +1173,9 @@ function renderBudgets() {
   container.innerHTML = '';
 
   const monthTxs = getCurrentMonthTransactions().filter(t => t.type === 'expense');
+  const monthKey = `${state.currentYear}-${String(state.currentMonth).padStart(2, '0')}`;
   const currentMonthBudget = getMonthBudgets(state.currentYear, state.currentMonth);
-  const activeBudgetCats = Object.keys(currentMonthBudget);
+  const activeBudgetCats = getActiveBudgetCategories(monthKey);
 
   // 상단 "+ 예산 항목 추가" 드롭다운 옵션 갱신
   populateAddBudgetCatDropdown(activeBudgetCats);
@@ -1082,9 +1201,9 @@ function renderBudgets() {
     item.innerHTML = `
       <div class="budget-item-top">
         <div class="budget-cat-title" style="display:flex; align-items:center; gap:8px;">
-          <div class="reorder-btns" style="display:flex; gap:2px;">
-            <button type="button" class="action-icon-btn" onclick="moveBudgetCategory(${idx}, -1)" ${idx === 0 ? 'disabled style="opacity:0.2;"' : ''} title="위로 이동" style="padding:2px 6px; font-size:11px;">▲</button>
-            <button type="button" class="action-icon-btn" onclick="moveBudgetCategory(${idx}, 1)" ${idx === activeBudgetCats.length - 1 ? 'disabled style="opacity:0.2;"' : ''} title="아래로 이동" style="padding:2px 6px; font-size:11px;">▼</button>
+          <div class="reorder-btns">
+            <button type="button" class="action-icon-btn" onclick="moveBudgetCategory(${idx}, -1)" ${idx === 0 ? 'disabled' : ''} title="위로 이동">▲</button>
+            <button type="button" class="action-icon-btn" onclick="moveBudgetCategory(${idx}, 1)" ${idx === activeBudgetCats.length - 1 ? 'disabled' : ''} title="아래로 이동">▼</button>
           </div>
           <span>${getCategoryEmoji(cat)} ${cat}</span>
           ${targetBudget > 0 ? (
@@ -1141,7 +1260,7 @@ function handleAddBudgetCategory() {
 
   const newCat = select.value;
   const monthKey = `${state.currentYear}-${String(state.currentMonth).padStart(2, '0')}`;
-  if (!state.budgets[monthKey]) state.budgets[monthKey] = {};
+  getMonthBudgets(state.currentYear, state.currentMonth);
 
   // 현재 입력창에 수정 중인 금액들 먼저 state에 반영
   document.querySelectorAll('.budget-input-field').forEach(inp => {
@@ -1151,6 +1270,16 @@ function handleAddBudgetCategory() {
 
   // 새 항목 추가 (기본 0원)
   state.budgets[monthKey][newCat] = 0;
+
+  const activeBudgetCats = [...getActiveBudgetCategories(monthKey)];
+  if (!activeBudgetCats.includes(newCat)) {
+    activeBudgetCats.push(newCat);
+  }
+  if (!state.budgetOrders) state.budgetOrders = {};
+  state.budgetOrders[monthKey] = activeBudgetCats;
+
+  localStorage.setItem('couple_budget_budget_orders', JSON.stringify(state.budgetOrders));
+  localStorage.setItem('couple_budget_budgets', JSON.stringify(state.budgets));
 
   pushDataToFirebase();
   renderBudgets();
@@ -1171,6 +1300,12 @@ window.removeBudgetCategory = function(cat) {
 
   delete state.budgets[monthKey][cat];
 
+  if (state.budgetOrders && state.budgetOrders[monthKey]) {
+    state.budgetOrders[monthKey] = state.budgetOrders[monthKey].filter(c => c !== cat);
+    localStorage.setItem('couple_budget_budget_orders', JSON.stringify(state.budgetOrders));
+  }
+  localStorage.setItem('couple_budget_budgets', JSON.stringify(state.budgets));
+
   pushDataToFirebase();
   renderBudgets();
   renderSummaryCards();
@@ -1178,7 +1313,7 @@ window.removeBudgetCategory = function(cat) {
 
 window.moveBudgetCategory = function(idx, direction) {
   const monthKey = `${state.currentYear}-${String(state.currentMonth).padStart(2, '0')}`;
-  if (!state.budgets[monthKey]) return;
+  getMonthBudgets(state.currentYear, state.currentMonth);
 
   // 현재 입력창에 수정 중인 금액들 먼저 state에 반영
   document.querySelectorAll('.budget-input-field').forEach(inp => {
@@ -1186,21 +1321,27 @@ window.moveBudgetCategory = function(idx, direction) {
     state.budgets[monthKey][c] = parseInt(inp.value, 10) || 0;
   });
 
-  const budgetObj = state.budgets[monthKey];
-  const keys = Object.keys(budgetObj);
+  const activeBudgetCats = [...getActiveBudgetCategories(monthKey)];
   const targetIdx = idx + direction;
-  if (targetIdx < 0 || targetIdx >= keys.length) return;
+  if (targetIdx < 0 || targetIdx >= activeBudgetCats.length) return;
 
-  // Swap position
-  const temp = keys[idx];
-  keys[idx] = keys[targetIdx];
-  keys[targetIdx] = temp;
+  // Swap position in array
+  const temp = activeBudgetCats[idx];
+  activeBudgetCats[idx] = activeBudgetCats[targetIdx];
+  activeBudgetCats[targetIdx] = temp;
 
-  const newObj = {};
-  keys.forEach(k => {
-    newObj[k] = budgetObj[k];
+  if (!state.budgetOrders) state.budgetOrders = {};
+  state.budgetOrders[monthKey] = activeBudgetCats;
+
+  // Also re-order the keys in state.budgets[monthKey] for consistency
+  const newBudgetObj = {};
+  activeBudgetCats.forEach(k => {
+    newBudgetObj[k] = state.budgets[monthKey][k] !== undefined ? state.budgets[monthKey][k] : 0;
   });
-  state.budgets[monthKey] = newObj;
+  state.budgets[monthKey] = newBudgetObj;
+
+  localStorage.setItem('couple_budget_budget_orders', JSON.stringify(state.budgetOrders));
+  localStorage.setItem('couple_budget_budgets', JSON.stringify(state.budgets));
 
   pushDataToFirebase();
   renderBudgets();
@@ -1231,6 +1372,12 @@ function copyPrevMonthBudget() {
 
   const curMonthKey = `${state.currentYear}-${String(state.currentMonth).padStart(2, '0')}`;
   state.budgets[curMonthKey] = { ...prevBudgets };
+  if (state.budgetOrders && state.budgetOrders[prevMonthKey]) {
+    if (!state.budgetOrders) state.budgetOrders = {};
+    state.budgetOrders[curMonthKey] = [...state.budgetOrders[prevMonthKey]];
+    localStorage.setItem('couple_budget_budget_orders', JSON.stringify(state.budgetOrders));
+  }
+  localStorage.setItem('couple_budget_budgets', JSON.stringify(state.budgets));
 
   pushDataToFirebase();
   renderBudgets();
@@ -1252,12 +1399,19 @@ function saveBudgets() {
   }
 
   const currentObj = {};
+  const currentOrder = [];
   document.querySelectorAll('.budget-input-field').forEach(inp => {
     const cat = inp.dataset.cat;
     const val = parseInt(inp.value, 10) || 0;
     currentObj[cat] = val;
+    currentOrder.push(cat);
   });
   state.budgets[monthKey] = currentObj;
+  if (!state.budgetOrders) state.budgetOrders = {};
+  state.budgetOrders[monthKey] = currentOrder;
+
+  localStorage.setItem('couple_budget_budgets', JSON.stringify(state.budgets));
+  localStorage.setItem('couple_budget_budget_orders', JSON.stringify(state.budgetOrders));
 
   pushDataToFirebase();
   alert(`${state.currentYear}년 ${state.currentMonth}월 카테고리별 목표 예산이 저장되었습니다!`);
@@ -1603,15 +1757,33 @@ function updateCharts() {
 }
 
 function getCategoryEmoji(cat) {
+  if (!cat) return '🏷️';
   const map = {
     '식비': '🛒', '생활비': '🏠', '관리비': '🏢', '가스비': '🔥', '유류비': '⛽', '하이패스': '🛣️',
-    '구독인터넷': '📡', '외식': '🍔', '여행지금': '✈️', '네일': '💅', '미용실': '💈',
+    '상헌교통비': '🚌', '구독인터넷': '📡', '외식': '🍔', '여행지금': '✈️', '네일': '💅', '미용실': '💈',
     '교통비': '🚌', '운동': '🏋️', '의': '👗', '주': '🏠', '연금': '💵', '대출이자': '🏦',
-    '소영': '👩', '의료비': '💊', '예비자금': '💰', '상연용돈': '👛', '소영용돈': '👛',
+    '소영': '👩', '상헌': '👨', '의료비': '💊', '예비자금': '💰', '상연용돈': '👛', '소영용돈': '👛', '상헌용돈': '👛',
     '특수생활비': '🎁', '보험': '🛡️', '통신비': '📱', '동생': '👧', '고정비': '📌',
-    '주택청약': '🏡', '청년': '🌱', '투자': '📈', '급여': '💵'
+    '주택청약': '🏡', '청년': '🌱', '투자': '📈', '학식': '🍱', '적금': '🏦',
+    '급여': '💵', '추가수입': '💵', '기타수입': '💰', '보너스': '🎉', '금융수입': '📈', '이월': '🔄',
+    '선물': '🎁', '취미': '🎨', '문화': '🎬', '카페': '☕', '배달': '🛵', '쇼핑': '🛍️', '반려동물': '🐾'
   };
-  return map[cat] || '🏷️';
+  if (map[cat]) return map[cat];
+
+  // Dynamic keyword fallback
+  if (cat.includes('교통') || cat.includes('버스') || cat.includes('지하철')) return '🚌';
+  if (cat.includes('용돈')) return '👛';
+  if (cat.includes('식') || cat.includes('밥') || cat.includes('외식') || cat.includes('푸드')) return '🍽️';
+  if (cat.includes('카페') || cat.includes('커피')) return '☕';
+  if (cat.includes('쇼핑') || cat.includes('의류') || cat.includes('옷')) return '🛍️';
+  if (cat.includes('병원') || cat.includes('약') || cat.includes('의료')) return '💊';
+  if (cat.includes('주거') || cat.includes('월세') || cat.includes('전세') || cat.includes('아파트')) return '🏠';
+  if (cat.includes('차') || cat.includes('주유') || cat.includes('기름')) return '⛽';
+  if (cat.includes('수입') || cat.includes('월급') || cat.includes('상여') || cat.includes('보너스')) return '💵';
+  if (cat.includes('투자') || cat.includes('주식') || cat.includes('펀드') || cat.includes('코인')) return '📈';
+  if (cat.includes('선물')) return '🎁';
+  if (cat.includes('축의') || cat.includes('부의') || cat.includes('경조사')) return '💌';
+  return '🏷️';
 }
 
 function exportBackupJSON() {
@@ -1619,7 +1791,8 @@ function exportBackupJSON() {
     transactions: state.transactions,
     payMethods: state.payMethods,
     categories: state.categories,
-    budgets: state.budgets
+    budgets: state.budgets,
+    budgetOrders: state.budgetOrders
   };
   const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
@@ -1639,6 +1812,7 @@ function importBackupJSON(e) {
       if (data.payMethods) state.payMethods = data.payMethods;
       if (data.categories) state.categories = data.categories;
       if (data.budgets) state.budgets = data.budgets;
+      if (data.budgetOrders) state.budgetOrders = data.budgetOrders;
 
       pushDataToFirebase();
       alert('데이터 복원이 완료되었습니다!');
@@ -1778,8 +1952,12 @@ function renderManageTagList() {
   items.forEach((item, idx) => {
     const li = document.createElement('li');
     li.className = 'tag-manage-item';
+    const icon = currentManageType === 'payMethods' ? getPayMethodIcon(item) : getCategoryEmoji(item);
     li.innerHTML = `
-      <span>${item}</span>
+      <span style="display:flex; align-items:center; gap:8px;">
+        <span style="font-size:15px;">${icon}</span>
+        <span style="font-weight:600;">${item}</span>
+      </span>
       <div class="tag-actions" style="display:flex; gap:4px; align-items:center;">
         <button class="action-icon-btn" onclick="moveTagItem(${idx}, -1)" ${idx === 0 ? 'disabled style="opacity:0.3;"' : ''} title="위로 이동">▲</button>
         <button class="action-icon-btn" onclick="moveTagItem(${idx}, 1)" ${idx === items.length - 1 ? 'disabled style="opacity:0.3;"' : ''} title="아래로 이동">▼</button>
